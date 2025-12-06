@@ -41,11 +41,26 @@ export default async function StartupPage({ params }: PageProps) {
       notFound();
     }
 
+    // Trim and normalize the slug
+    const normalizedSlug = slug.trim();
+    
     const startup = await prisma.startup.findUnique({
-      where: { slug },
+      where: { slug: normalizedSlug },
     });
 
-    if (!startup || startup.status !== "APPROVED") {
+    if (!startup) {
+      // Debug: List all approved startups
+      const allStartups = await prisma.startup.findMany({
+        where: { status: "APPROVED" },
+        select: { slug: true, name: true },
+      });
+      console.error(`[Startup Profile] Startup not found for slug: "${normalizedSlug}"`);
+      console.error(`[Startup Profile] Available approved slugs:`, allStartups.map(s => s.slug));
+      notFound();
+    }
+
+    if (startup.status !== "APPROVED") {
+      console.error(`[Startup Profile] Startup "${startup.name}" (${startup.slug}) has status: ${startup.status}, expected APPROVED`);
       notFound();
     }
 
