@@ -80,26 +80,4 @@ export function StageIcon({ stage, type, className = "h-5 w-5" }: StageIconProps
   }
 }
 
-export function getStageLabel(stage: CompanyStage | FinancialStage | null | undefined, type: "company" | "financial"): string {
-  if (!stage) return "";
-
-  if (type === "company") {
-    const labels: Record<CompanyStage, string> = {
-      IDEA: "Idea",
-      BUILDING: "Building",
-      PRIVATE_BETA: "Private Beta",
-      LIVE: "Live",
-    };
-    return labels[stage as CompanyStage] || "";
-  } else {
-    const labels: Record<FinancialStage, string> = {
-      BOOTSTRAPPED: "Bootstrapped",
-      NOT_RAISING: "Not Raising",
-      RAISING_SOON: "Raising Soon",
-      RAISING: "Raising",
-      FUNDED: "Funded",
-    };
-    return labels[stage as FinancialStage] || "";
-  }
-}
 

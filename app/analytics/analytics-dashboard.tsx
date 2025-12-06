@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { getStageLabel } from "@/components/stage-icons";
+import { getStageLabel } from "@/lib/stage-utils";
 import { CompanyStage, FinancialStage } from "@prisma/client";
 
 interface AnalyticsDashboardProps {
@@ -181,9 +181,9 @@ export function AnalyticsDashboard({
         </div>
       </div>
 
-      {/* Financial Stage Heat Map */}
+      {/* Funding Heat Map */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Financial Stage Interest</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Funding Interest</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {Object.entries(financialStageData)
             .sort(([, a], [, b]) => b - a)

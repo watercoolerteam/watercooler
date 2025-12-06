@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Startup } from "@prisma/client";
-import { StageIcon, getStageLabel } from "@/components/stage-icons";
+import { StageIcon } from "@/components/stage-icons";
+import { getStageLabel } from "@/lib/stage-utils";
 
 interface BrowseContentProps {
   startups: Startup[];

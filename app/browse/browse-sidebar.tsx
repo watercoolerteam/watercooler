@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CompanyStage, FinancialStage } from "@prisma/client";
-import { getStageLabel } from "@/components/stage-icons";
+import { getStageLabel } from "@/lib/stage-utils";
 
 interface BrowseSidebarProps {
   category: string;
@@ -171,10 +171,10 @@ export function BrowseSidebar({
           </select>
         </div>
 
-        {/* Financial Stage Filter */}
+        {/* Funding Filter */}
         <div>
           <label htmlFor="financialStage" className="block text-sm font-semibold text-gray-900 mb-2">
-            Financial Stage
+            Funding
           </label>
           <select
             id="financialStage"

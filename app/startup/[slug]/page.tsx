@@ -4,14 +4,17 @@ import Link from "next/link";
 import { Metadata } from "next";
 import Image from "next/image";
 import { TrackView } from "./track-view";
-import { StageIcon, getStageLabel } from "@/components/stage-icons";
+import { StageIcon } from "@/components/stage-icons";
+import { getStageLabel } from "@/lib/stage-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const resolvedParams = await params;
+  const slug = String(resolvedParams.slug).trim();
+  
   const startup = await prisma.startup.findUnique({
     where: { slug },
   });
@@ -35,32 +38,54 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StartupPage({ params }: PageProps) {
   try {
-    const { slug } = await params;
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug;
     
-    if (!slug) {
+    if (!slug || typeof slug !== 'string') {
+      console.error('[Startup Profile] Invalid slug parameter:', slug);
       notFound();
     }
 
-    // Trim and normalize the slug
-    const normalizedSlug = slug.trim();
+    // Normalize slug - trim and ensure it's a string
+    const normalizedSlug = String(slug).trim();
     
+    if (!normalizedSlug) {
+      console.error('[Startup Profile] Empty slug after normalization');
+      notFound();
+    }
+
+    // Try to find the startup
     const startup = await prisma.startup.findUnique({
       where: { slug: normalizedSlug },
     });
 
     if (!startup) {
-      // Debug: List all approved startups
-      const allStartups = await prisma.startup.findMany({
+      // Get all approved startups for debugging
+      const allApproved = await prisma.startup.findMany({
         where: { status: "APPROVED" },
-        select: { slug: true, name: true },
+        select: { slug: true, name: true, id: true },
       });
-      console.error(`[Startup Profile] Startup not found for slug: "${normalizedSlug}"`);
-      console.error(`[Startup Profile] Available approved slugs:`, allStartups.map(s => s.slug));
+      
+      console.error(`[Startup Profile] ❌ Startup not found for slug: "${normalizedSlug}"`);
+      console.error(`[Startup Profile] 📋 Found ${allApproved.length} approved startups:`);
+      allApproved.forEach(s => {
+        console.error(`  - "${s.slug}" (${s.name})`);
+      });
+      
+      // Try case-insensitive search as fallback
+      const caseInsensitiveMatch = allApproved.find(
+        s => s.slug.toLowerCase() === normalizedSlug.toLowerCase()
+      );
+      
+      if (caseInsensitiveMatch) {
+        console.error(`[Startup Profile] ⚠️ Found case-insensitive match: "${caseInsensitiveMatch.slug}" vs "${normalizedSlug}"`);
+      }
+      
       notFound();
     }
 
     if (startup.status !== "APPROVED") {
-      console.error(`[Startup Profile] Startup "${startup.name}" (${startup.slug}) has status: ${startup.status}, expected APPROVED`);
+      console.error(`[Startup Profile] ❌ Startup "${startup.name}" (${startup.slug}) has status "${startup.status}", expected "APPROVED"`);
       notFound();
     }
 
@@ -179,7 +204,7 @@ export default async function StartupPage({ params }: PageProps) {
               )}
               {startup.financialStage && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Financial Stage</dt>
+                  <dt className="text-sm font-medium text-gray-500">Funding</dt>
                   <dd className="mt-1 flex items-center gap-2">
                     <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 border border-green-200">
                       <StageIcon stage={startup.financialStage} type="financial" className="h-4 w-4 text-green-600" />

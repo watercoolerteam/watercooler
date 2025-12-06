@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CompanyStage, FinancialStage } from "@prisma/client";
-import { getStageLabel } from "@/components/stage-icons";
+import { getStageLabel } from "@/lib/stage-utils";
 
 interface MobileFiltersProps {
   category: string;
@@ -158,10 +158,10 @@ export function MobileFilters({
                 </select>
               </div>
 
-              {/* Financial Stage */}
+              {/* Funding */}
               <div>
                 <label htmlFor="mobile-financialStage" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Financial Stage
+                  Funding
                 </label>
                 <select
                   id="mobile-financialStage"

@@ -424,7 +424,7 @@ export default function SubmitPage() {
 
                 <div>
                   <label htmlFor="financialStage" className="block text-sm font-medium text-gray-700 mb-2">
-                    Financial Stage
+                    Funding
                   </label>
                   <select
                     id="financialStage"

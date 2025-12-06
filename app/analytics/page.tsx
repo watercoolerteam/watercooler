@@ -60,7 +60,7 @@ export default async function AnalyticsPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  // Financial stage heat map data
+  // Funding heat map data
   const financialStageData = startups.reduce((acc, startup) => {
     if (startup.financialStage) {
       acc[startup.financialStage] = (acc[startup.financialStage] || 0) + startup.views;

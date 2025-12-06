@@ -63,7 +63,7 @@ After running the migration, you should see a message like:
 5. **Company Stage Interest**
    - Heat map showing which stages (Idea, Building, Private Beta, Live) are most viewed
 
-6. **Financial Stage Interest**
+6. **Funding Interest**
    - Heat map showing which funding stages get the most attention
 
 ## Troubleshooting
