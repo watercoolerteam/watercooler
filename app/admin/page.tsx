@@ -41,14 +41,26 @@ export default function AdminPage() {
     e.preventDefault();
     setError(null);
 
-    // Simple password check - in production, use proper authentication
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
-    if (password === adminPassword) {
-      sessionStorage.setItem("admin_authenticated", "true");
-      setIsAuthenticated(true);
-      fetchStartups();
-    } else {
-      setError("Incorrect password");
+    try {
+      const response = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        sessionStorage.setItem("admin_authenticated", "true");
+        setIsAuthenticated(true);
+        fetchStartups();
+      } else {
+        setError(data.error || "Invalid password");
+      }
+    } catch (err) {
+      setError("Failed to authenticate. Please try again.");
     }
   };
 
