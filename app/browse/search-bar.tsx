@@ -4,13 +4,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 interface SearchBarProps {
-  search: string;
+  initialSearch: string;
 }
 
-export function SearchBar({ search }: SearchBarProps) {
+export function SearchBar({ initialSearch }: SearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchValue, setSearchValue] = useState(search);
+  const [searchValue, setSearchValue] = useState(initialSearch);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

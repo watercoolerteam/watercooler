@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { Metadata } from "next";
+import { CompanyStage, FinancialStage } from "@prisma/client";
 import { BrowseContent } from "./browse-content";
 import { BrowseSidebar } from "./browse-sidebar";
 import { SearchBar } from "./search-bar";
@@ -92,6 +93,8 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         select: {
           category: true,
           location: true,
+          companyStage: true,
+          financialStage: true,
         },
       }),
     ]);
@@ -102,6 +105,13 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     const locations = Array.from(
       new Set(allStartups.map((s) => s.location).filter(Boolean))
     ).sort();
+
+    const allCompanyStages = Array.from(
+      new Set(allStartups.map((s) => s.companyStage).filter(Boolean))
+    ).sort() as CompanyStage[];
+    const allFinancialStages = Array.from(
+      new Set(allStartups.map((s) => s.financialStage).filter(Boolean))
+    ).sort() as FinancialStage[];
 
     const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
