@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 import Image from "next/image";
 import { TrackView } from "./track-view";
+import { StageIcon, getStageLabel } from "@/components/stage-icons";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -147,6 +148,28 @@ export default async function StartupPage({ params }: PageProps) {
                     {startup.founderHighlight && (
                       <span className="block mt-1 text-gray-500 text-xs">{startup.founderHighlight}</span>
                     )}
+                  </dd>
+                </div>
+              )}
+              {startup.companyStage && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Company Stage</dt>
+                  <dd className="mt-1 flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 border border-blue-200">
+                      <StageIcon stage={startup.companyStage} type="company" className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <span className="text-sm text-gray-900">{getStageLabel(startup.companyStage, "company")}</span>
+                  </dd>
+                </div>
+              )}
+              {startup.financialStage && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Financial Stage</dt>
+                  <dd className="mt-1 flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 border border-green-200">
+                      <StageIcon stage={startup.financialStage} type="financial" className="h-4 w-4 text-green-600" />
+                    </div>
+                    <span className="text-sm text-gray-900">{getStageLabel(startup.financialStage, "financial")}</span>
                   </dd>
                 </div>
               )}
