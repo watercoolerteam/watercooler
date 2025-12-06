@@ -23,15 +23,47 @@ interface Startup {
 export default function AdminPage() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [startups, setStartups] = useState<Startup[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("PENDING");
 
   useEffect(() => {
-    // Auto-authenticate - no password required
-    setIsAuthenticated(true);
-    fetchStartups();
+    // Check if already authenticated
+    const auth = sessionStorage.getItem("admin_authenticated");
+    if (auth === "true") {
+      setIsAuthenticated(true);
+      fetchStartups();
+    }
   }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    try {
+      const response = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        sessionStorage.setItem("admin_authenticated", "true");
+        setIsAuthenticated(true);
+        fetchStartups();
+      } else {
+        setError(data.error || "Invalid password");
+      }
+    } catch (err) {
+      setError("Failed to authenticate. Please try again.");
+    }
+  };
 
 
   const fetchStartups = async () => {
@@ -84,6 +116,47 @@ export default function AdminPage() {
     return startup.status === filter;
   });
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Login</h1>
+          {error && (
+            <div className="mb-4 rounded-md bg-red-50 p-4">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                placeholder="Enter admin password"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full rounded-md bg-gray-900 px-4 py-2 text-base font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+            >
+              Login
+            </button>
+          </form>
+          <div className="mt-4 text-center">
+            <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+              ← Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
