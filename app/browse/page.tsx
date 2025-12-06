@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { Metadata } from "next";
 import { BrowseContent } from "./browse-content";
 import { BrowseSidebar } from "./browse-sidebar";
 import { SearchBar } from "./search-bar";
+import { MobileFilters } from "@/components/mobile-filters";
 
 export const metadata: Metadata = {
   title: "Browse Startups | Watercooler",
@@ -108,37 +110,76 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         <nav className="border-b border-gray-200 bg-white sticky top-0 z-20 backdrop-blur-sm bg-white/95">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
-              <Link href="/" className="text-2xl font-bold text-gray-900 tracking-tight">
-                Watercooler
+              <Link href="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity">
+                <div className="relative h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                  <Image
+                    src="/logo-icon.png"
+                    alt="Watercooler"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+                <span className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+                  Watercooler
+                </span>
               </Link>
-              <div className="flex items-center gap-6">
+              <div className="hidden sm:flex items-center gap-4 sm:gap-6">
                 <Link
                   href="/submit"
                   className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
                 >
-                  Submit Your Startup
+                  Submit
+                </Link>
+                <Link
+                  href="/analytics"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Analytics
                 </Link>
               </div>
+              <Link
+                href="/submit"
+                className="sm:hidden rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+              >
+                Submit
+              </Link>
             </div>
           </div>
         </nav>
 
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">
-              Discover Startups
-            </h1>
-            <p className="text-lg text-gray-600">
-              Explore early-stage startups building the future.
-            </p>
-          </div>
+              <div className="mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 tracking-tight">
+                  Discover Startups
+                </h1>
+                <p className="text-base sm:text-lg text-gray-600">
+                  Explore early-stage startups building the future.
+                </p>
+              </div>
 
           {/* Prominent Search Bar */}
           <div className="mb-6">
-            <SearchBar search={search} />
+            <SearchBar initialSearch={search} />
           </div>
 
-          <div className="flex gap-8 items-start">
+          {/* Mobile Filters Button */}
+          <div className="md:hidden mb-4">
+            <MobileFilters
+              category={category}
+              location={location}
+              companyStage={companyStage}
+              financialStage={financialStage}
+              categories={categories}
+              locations={locations}
+              allCompanyStages={allCompanyStages as CompanyStage[]}
+              allFinancialStages={allFinancialStages as FinancialStage[]}
+              totalCount={totalCount}
+            />
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start">
             {/* Sidebar Filters */}
             <BrowseSidebar
               category={category}
@@ -147,6 +188,8 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
               financialStage={financialStage}
               categories={categories}
               locations={locations}
+              allCompanyStages={allCompanyStages as CompanyStage[]}
+              allFinancialStages={allFinancialStages as FinancialStage[]}
               totalCount={totalCount}
             />
 

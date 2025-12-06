@@ -213,8 +213,20 @@ export default function SubmitPage() {
       <nav className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-gray-900">
-              Watercooler
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <div className="relative h-12 w-12 flex-shrink-0">
+                <Image
+                  src="/logo-icon.png"
+                  alt="Watercooler"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="text-2xl font-bold text-gray-900 tracking-tight">
+                Watercooler
+              </span>
             </Link>
             <Link
               href="/browse"

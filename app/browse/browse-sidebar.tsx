@@ -12,6 +12,8 @@ interface BrowseSidebarProps {
   financialStage: string;
   categories: (string | null)[];
   locations: (string | null)[];
+  allCompanyStages: CompanyStage[];
+  allFinancialStages: FinancialStage[];
   totalCount: number;
 }
 
@@ -22,6 +24,8 @@ export function BrowseSidebar({
   financialStage,
   categories,
   locations,
+  allCompanyStages,
+  allFinancialStages,
   totalCount,
 }: BrowseSidebarProps) {
   const router = useRouter();
@@ -54,8 +58,8 @@ export function BrowseSidebar({
   ].filter((f) => f.value);
 
   return (
-    <aside className="w-64 flex-shrink-0">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <aside className="hidden md:block w-full md:w-64 flex-shrink-0">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6 sticky top-24">
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Filters</h2>
 
         {/* Active Filters */}
@@ -159,10 +163,11 @@ export function BrowseSidebar({
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm transition-all focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white font-medium"
           >
             <option value="">All Stages</option>
-            <option value="IDEA">{getStageLabel("IDEA" as CompanyStage, "company")}</option>
-            <option value="BUILDING">{getStageLabel("BUILDING" as CompanyStage, "company")}</option>
-            <option value="PRIVATE_BETA">{getStageLabel("PRIVATE_BETA" as CompanyStage, "company")}</option>
-            <option value="LIVE">{getStageLabel("LIVE" as CompanyStage, "company")}</option>
+            {allCompanyStages.map((s) => (
+              <option key={s} value={s}>
+                {getStageLabel(s, "company")}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -178,11 +183,11 @@ export function BrowseSidebar({
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm transition-all focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white font-medium"
           >
             <option value="">All Stages</option>
-            <option value="BOOTSTRAPPED">{getStageLabel("BOOTSTRAPPED" as FinancialStage, "financial")}</option>
-            <option value="NOT_RAISING">{getStageLabel("NOT_RAISING" as FinancialStage, "financial")}</option>
-            <option value="RAISING_SOON">{getStageLabel("RAISING_SOON" as FinancialStage, "financial")}</option>
-            <option value="RAISING">{getStageLabel("RAISING" as FinancialStage, "financial")}</option>
-            <option value="FUNDED">{getStageLabel("FUNDED" as FinancialStage, "financial")}</option>
+            {allFinancialStages.map((s) => (
+              <option key={s} value={s}>
+                {getStageLabel(s, "financial")}
+              </option>
+            ))}
           </select>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -6,47 +7,65 @@ export default function Home() {
       <nav className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-gray-900">
-              Watercooler
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity">
+              <div className="relative h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                <Image
+                  src="/logo-icon.png"
+                  alt="Watercooler"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+                Watercooler
+              </span>
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-4">
               <Link
                 href="/browse"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm sm:text-base"
               >
                 Browse Startups
               </Link>
               <Link
                 href="/submit"
-                className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+                className="rounded-md bg-gray-900 px-3 py-2 sm:px-4 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
               >
-                Submit Your Startup
+                Submit
               </Link>
             </div>
+            <Link
+              href="/submit"
+              className="sm:hidden rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+            >
+              Submit
+            </Link>
           </div>
         </div>
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center py-24 sm:py-32">
-          <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+        <div className="mx-auto max-w-3xl text-center py-12 sm:py-24 lg:py-32 px-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900">
             This is where new startups get discovered.
           </h1>
-          <p className="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-4 sm:mt-6 text-base sm:text-lg leading-7 sm:leading-8 text-gray-600 max-w-2xl mx-auto">
             Watercooler is a public directory of early-stage startups. 
             Founders can submit their startup, and scouts, investors, and operators 
             can freely browse, search, and discover the next big thing.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6">
             <Link
               href="/browse"
-              className="rounded-md bg-gray-900 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors"
+              className="w-full sm:w-auto rounded-md bg-gray-900 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors text-center"
             >
               Browse Startups
             </Link>
             <Link
               href="/submit"
-              className="text-base font-semibold leading-6 text-gray-900 hover:text-gray-700 transition-colors"
+              className="w-full sm:w-auto text-base font-semibold leading-6 text-gray-900 hover:text-gray-700 transition-colors text-center"
             >
               Submit Your Startup <span aria-hidden="true">→</span>
             </Link>
