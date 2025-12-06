@@ -1,0 +1,74 @@
+// Prisma schema for Watercooler - Supabase PostgreSQL
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Startup {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  oneLiner          String?  @db.VarChar(120)
+  description       String   @db.Text
+  website           String?
+  logo              String?
+  category          String?
+  location          String?
+  founderNames      String
+  founderEmail      String
+  founderHighlight  String?
+  founderXLink      String?
+  founderLinkedInLink String?
+  companyStage      CompanyStage?
+  financialStage    FinancialStage?
+  status            StartupStatus @default(PENDING)
+  views             Int           @default(0)
+  claimedBy         String?
+  claimedAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User?    @relation(fields: [claimedBy], references: [id])
+  
+  @@index([status])
+  @@index([slug])
+  @@index([founderEmail])
+  @@index([category])
+  @@index([companyStage])
+  @@index([financialStage])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  startups  Startup[]
+}
+
+enum StartupStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CompanyStage {
+  IDEA
+  BUILDING
+  PRIVATE_BETA
+  LIVE
+}
+
+enum FinancialStage {
+  BOOTSTRAPPED
+  NOT_RAISING
+  RAISING_SOON
+  RAISING
+  FUNDED
+}
