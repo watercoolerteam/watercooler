@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
 import Image from "next/image";
@@ -275,6 +275,9 @@ export default async function StartupPage({ params }: PageProps) {
   );
   } catch (error) {
     console.error("Error loading startup page:", error);
+    // Re-throw Next.js special errors (like notFound) so they can be handled properly
+    unstable_rethrow(error);
+    // If it's not a Next.js special error, call notFound() to show 404 page
     notFound();
   }
 }
