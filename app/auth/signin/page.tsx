@@ -1,60 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 
-export default function ClaimPage() {
-  const router = useRouter();
+export default function SignInPage() {
   const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setIsLoading(true);
     setError(null);
+    setSuccess(false);
 
     try {
-      const response = await fetch("/api/claim", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
+      const result = await signIn("email", {
+        email,
+        redirect: false,
       });
 
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        // Handle different error types
-        if (response.status === 400) {
-          throw new Error(responseData.error || "Please check your email address");
-        } else if (response.status === 404) {
-          throw new Error(responseData.error || "No startups found for this email");
-        } else if (response.status === 500) {
-          // Try to get more specific error message
-          const errorMsg = responseData.error || responseData.message || "Server error. Please try again in a moment.";
-          throw new Error(errorMsg);
-        } else {
-          throw new Error(responseData.error || "Failed to process claim request");
-        }
-      }
-
-      setSuccess(true);
-    } catch (err) {
-      // Provide user-friendly error messages
-      if (err instanceof Error) {
-        setError(err.message);
-      } else if (typeof err === 'string') {
-        setError(err);
+      if (result?.error) {
+        setError("Failed to send sign-in email. Please try again.");
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setSuccess(true);
       }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
@@ -63,15 +40,31 @@ export default function ClaimPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
-            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            <svg
+              className="h-6 w-6 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Claim Email Sent!</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Check Your Email
+          </h2>
           <p className="text-gray-600 mb-6">
-            We've sent a verification email to <strong>{email}</strong>. Please check your inbox (and spam folder) to complete the claim process.
+            We've sent a sign-in link to <strong>{email}</strong>. Please check
+            your inbox (and spam folder) to complete sign-in.
           </p>
-          <Link href="/" className="text-gray-900 font-medium hover:text-gray-700">
+          <Link
+            href="/"
+            className="text-gray-900 font-medium hover:text-gray-700"
+          >
             Return to Home →
           </Link>
         </div>
@@ -84,7 +77,10 @@ export default function ClaimPage() {
       <nav className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <Link
+              href="/"
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <div className="relative h-12 w-12 flex-shrink-0">
                 <Image
                   src="/logo-icon.png"
@@ -100,11 +96,11 @@ export default function ClaimPage() {
               </span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link href="/browse" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link
+                href="/browse"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+              >
                 Browse Startups
-              </Link>
-              <Link href="/submit" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Submit Your Startup
               </Link>
             </div>
           </div>
@@ -113,10 +109,10 @@ export default function ClaimPage() {
 
       <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Claim Your Startup</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
           <p className="text-gray-600 mb-8">
-            Enter the email address you used when submitting your startup. 
-            We'll send you a link to verify ownership and claim your startup page.
+            Enter your email address and we'll send you a sign-in link. No
+            password required.
           </p>
 
           {error && (
@@ -127,8 +123,11 @@ export default function ClaimPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Founder Email <span className="text-red-500">*</span>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email Address <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
@@ -140,21 +139,31 @@ export default function ClaimPage() {
                 className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
                 placeholder="founder@yourstartup.com"
               />
-              <p className="mt-1 text-sm text-gray-700">
-                This should match the email you used when submitting your startup.
+              <p className="mt-1 text-sm text-gray-500">
+                Use the email address associated with your claimed startup(s).
               </p>
             </div>
 
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isLoading}
                 className="w-full rounded-md bg-gray-900 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isSubmitting ? "Sending..." : "Send Claim Link"}
+                {isLoading ? "Sending..." : "Send Sign-In Link"}
               </button>
             </div>
           </form>
+
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-600 text-center">
+              Don't have an account?{" "}
+              <Link href="/claim" className="text-gray-900 font-medium hover:text-gray-700">
+                Claim your startup
+              </Link>{" "}
+              to create one.
+            </p>
+          </div>
         </div>
       </main>
     </div>

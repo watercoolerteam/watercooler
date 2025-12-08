@@ -271,12 +271,45 @@ export default async function StartupPage({ params }: PageProps) {
             </div>
           )}
 
-          {!startup.claimedBy && (
+          {startup.claimedBy ? (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-center gap-2 mb-2">
+                <svg
+                  className="h-5 w-5 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span className="text-sm font-medium text-gray-900">
+                  Claimed
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                This startup has been claimed by its founder.
+              </p>
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium text-gray-900 hover:text-gray-700 inline-flex items-center gap-1"
+              >
+                Manage in Dashboard →
+              </Link>
+            </div>
+          ) : (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-600 mb-2">
                 Are you the founder of {startup.name}?
               </p>
-              <Link href="/claim" className="text-sm font-medium text-gray-900 hover:text-gray-700">
+              <Link
+                href="/claim"
+                className="text-sm font-medium text-gray-900 hover:text-gray-700"
+              >
                 Claim this startup →
               </Link>
             </div>

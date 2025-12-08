@@ -244,13 +244,16 @@ export async function sendSubmissionConfirmationEmail(
 }
 
 /**
- * Send claim verification email
+ * Send claim verification email with token link
  */
-export async function sendClaimEmail(founderEmail: string, startups: Array<{ name: string; slug: string }>) {
+export async function sendClaimEmail(
+  founderEmail: string,
+  startups: Array<{ name: string; slug: string }>,
+  token: string
+) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const verificationUrl = `${siteUrl}/claim/verify?token=${token}`;
   
-  // TODO: Generate secure token for claim verification
-  // For now, we'll just send a notification
   const startupList = startups.map(s => `<li><strong>${s.name}</strong></li>`).join('');
 
   return sendEmail({
@@ -275,17 +278,22 @@ export async function sendClaimEmail(founderEmail: string, startups: Array<{ nam
               ${startupList}
             </ul>
             
-            <p>To claim and manage your startup${startups.length > 1 ? 's' : ''}, please verify your email address.</p>
+            <p>To claim and manage your startup${startups.length > 1 ? 's' : ''}, please click the button below to verify your email address.</p>
             
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 30px 0;">
-              <p style="margin: 0; font-size: 14px; color: #6b7280;">
-                <strong>Note:</strong> Claim functionality is coming soon. For now, if you need to update your startup information, please contact us.
+            <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; margin: 30px 0; border-radius: 4px;">
+              <p style="margin: 0; font-size: 14px; color: #1e40af;">
+                <strong>⏰ This link expires in 24 hours</strong>
               </p>
             </div>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${siteUrl}" style="display: inline-block; background: #111827; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">Visit Watercooler</a>
+              <a href="${verificationUrl}" style="display: inline-block; background: #111827; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">Verify Email & Claim Startup${startups.length > 1 ? 's' : ''}</a>
             </div>
+            
+            <p style="color: #6b7280; font-size: 14px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+              If the button doesn't work, copy and paste this link into your browser:<br>
+              <a href="${verificationUrl}" style="color: #111827; word-break: break-all;">${verificationUrl}</a>
+            </p>
           </div>
           
           <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
