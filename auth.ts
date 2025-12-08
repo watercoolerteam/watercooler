@@ -25,6 +25,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await sendEmail({
           to: identifier,
           subject: "Sign in to Watercooler",
+          disableClickTracking: true, // Disable click tracking to avoid Google Safe Browsing warnings
           html: `
             <!DOCTYPE html>
             <html>

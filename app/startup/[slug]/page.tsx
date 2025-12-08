@@ -7,6 +7,7 @@ import { TrackView } from "./track-view";
 import { StageIcon } from "@/components/stage-icons";
 import { getStageLabel } from "@/lib/stage-utils";
 import { formatFullDate, formatRelativeDate, getEarlyAdopterLabel } from "@/lib/date-utils";
+import { AuthNav } from "@/components/auth-nav";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -116,13 +117,14 @@ export default async function StartupPage({ params }: PageProps) {
                 Watercooler
               </span>
             </Link>
-            <div className="flex items-center gap-4">
-              <Link href="/browse" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Browse Startups
+            <div className="flex items-center gap-6">
+              <Link href="/browse" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">
+                Browse
               </Link>
-              <Link href="/submit" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Submit Your Startup
+              <Link href="/submit" className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium">
+                Submit your startup
               </Link>
+              <AuthNav />
             </div>
           </div>
         </div>

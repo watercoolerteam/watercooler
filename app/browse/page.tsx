@@ -228,27 +228,24 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                   Watercooler
                 </span>
               </Link>
-              <div className="hidden sm:flex items-center gap-4 sm:gap-6">
+              <div className="hidden sm:flex items-center gap-6">
+                <Link
+                  href="/submit"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Submit your startup
+                </Link>
                 <AuthNav />
+              </div>
+              <div className="sm:hidden flex items-center gap-3">
                 <Link
                   href="/submit"
                   className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
                 >
                   Submit
                 </Link>
-                <Link
-                  href="/analytics"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
-                >
-                  Analytics
-                </Link>
+                <AuthNav />
               </div>
-              <Link
-                href="/submit"
-                className="sm:hidden rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
-              >
-                Submit
-              </Link>
             </div>
           </div>
         </nav>

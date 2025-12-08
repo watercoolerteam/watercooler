@@ -151,12 +151,20 @@ function VerifyClaimContent() {
               </span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link
-                href="/browse"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Browse Startups
-              </Link>
+              <div className="flex items-center gap-6">
+                <Link
+                  href="/browse"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Browse
+                </Link>
+                <Link
+                  href="/submit"
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Submit your startup
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -235,7 +243,7 @@ function VerifyClaimContent() {
                 href="/browse"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
               >
-                Browse Startups
+                Browse
               </Link>
               <Link
                 href="/"

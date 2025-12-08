@@ -8,6 +8,7 @@ export interface EmailOptions {
   subject: string;
   html: string;
   from?: string;
+  disableClickTracking?: boolean; // Disable click tracking to avoid security warnings
 }
 
 /**
@@ -26,6 +27,9 @@ export async function sendEmail(options: EmailOptions) {
     const fromAddress = options.from || process.env.EMAIL_FROM || 'Watercooler <onboarding@resend.dev>';
     console.log('📧 From:', fromAddress);
 
+    // Note: click_tracking and open_tracking are domain-level settings in Resend
+    // They cannot be set per-email via the API
+    // To disable click tracking, go to Resend Dashboard → Domains → Your Domain → Disable Click Tracking
     const result = await resend.emails.send({
       from: fromAddress,
       to: options.to,

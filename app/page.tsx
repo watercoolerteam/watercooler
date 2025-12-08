@@ -23,27 +23,30 @@ export default function Home() {
                 Watercooler
               </span>
             </Link>
-            <div className="hidden sm:flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-6">
               <Link
                 href="/browse"
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm sm:text-base"
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
               >
-                Browse Startups
+                Browse
               </Link>
-              <AuthNav />
               <Link
                 href="/submit"
-                className="rounded-md bg-gray-900 px-3 py-2 sm:px-4 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
               >
-                Submit
+                Submit your startup
               </Link>
+              <AuthNav />
             </div>
-            <Link
-              href="/submit"
-              className="sm:hidden rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
-            >
-              Submit
-            </Link>
+            <div className="sm:hidden flex items-center gap-3">
+              <Link
+                href="/browse"
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              >
+                Browse
+              </Link>
+              <AuthNav />
+            </div>
           </div>
         </div>
       </nav>

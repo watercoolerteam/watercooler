@@ -5,7 +5,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +25,7 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError("Failed to send sign-in email. Please try again.");
+        setError("Failed to send sign-up email. Please try again.");
       } else {
         setSuccess(true);
       }
@@ -59,8 +59,8 @@ export default function SignInPage() {
             Check Your Email
           </h2>
           <p className="text-gray-600 mb-6">
-            We've sent a sign-in link to <strong>{email}</strong>. Please check
-            your inbox (and spam folder) to complete sign-in.
+            We've sent a sign-up link to <strong>{email}</strong>. Please check
+            your inbox (and spam folder) to complete your account creation.
           </p>
           <Link
             href="/"
@@ -116,9 +116,9 @@ export default function SignInPage() {
 
       <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
           <p className="text-gray-600 mb-8">
-            Enter your email address and we'll send you a magic link to sign in. No password required.
+            Enter your email address and we'll send you a magic link to create your account. No password required.
           </p>
 
           {error && (
@@ -146,7 +146,7 @@ export default function SignInPage() {
                 placeholder="your@email.com"
               />
               <p className="mt-1 text-sm text-gray-500">
-                Use the email address associated with your account.
+                We'll create your account and send you a verification link.
               </p>
             </div>
 
@@ -162,10 +162,10 @@ export default function SignInPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Sending...
+                    Creating account...
                   </span>
                 ) : (
-                  "Sign In"
+                  "Create Account"
                 )}
               </button>
             </div>
@@ -173,9 +173,9 @@ export default function SignInPage() {
 
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-600 text-center">
-              Don't have an account?{" "}
-              <Link href="/auth/signup" className="text-gray-900 font-medium hover:text-gray-700">
-                Create one
+              Already have an account?{" "}
+              <Link href="/auth/signin" className="text-gray-900 font-medium hover:text-gray-700">
+                Sign in
               </Link>
             </p>
           </div>

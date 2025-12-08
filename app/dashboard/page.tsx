@@ -50,7 +50,7 @@ export default async function DashboardPage() {
                 Watercooler
               </span>
             </Link>
-            <div className="hidden sm:flex items-center gap-4 sm:gap-6">
+            <div className="hidden sm:flex items-center gap-6">
               <Link
                 href="/browse"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
@@ -61,7 +61,7 @@ export default async function DashboardPage() {
                 href="/submit"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
               >
-                Submit
+                Submit your startup
               </Link>
               <form action="/api/auth/signout" method="POST">
                 <button
@@ -127,32 +127,44 @@ export default async function DashboardPage() {
 
           {user.startups.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400 mb-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-6">
+                <svg
+                  className="h-8 w-8 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
                 No Startups Claimed Yet
               </h3>
-              <p className="text-gray-600 mb-6">
-                You haven't claimed any startups yet. Claim a startup to manage
-                it from here.
+              <p className="text-gray-600 mb-2 max-w-md mx-auto">
+                You haven't claimed any startups yet. To claim a startup, you need to have submitted it first.
               </p>
-              <Link
-                href="/claim"
-                className="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
-              >
-                Claim Your Startup
-              </Link>
+              <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
+                Once your startup is approved, you can claim it to manage it from your dashboard.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/claim"
+                  className="inline-flex items-center rounded-md bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+                >
+                  Claim Your Startup
+                </Link>
+                <Link
+                  href="/submit"
+                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+                >
+                  Submit a Startup
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

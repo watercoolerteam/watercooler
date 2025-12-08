@@ -179,6 +179,12 @@ export default function AdminPage() {
               </span>
             </Link>
             <div className="flex items-center gap-4">
+              <Link
+                href="/analytics"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+              >
+                Analytics
+              </Link>
               <button
                 onClick={() => {
                   sessionStorage.removeItem("admin_authenticated");

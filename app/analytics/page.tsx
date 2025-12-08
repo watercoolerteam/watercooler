@@ -96,13 +96,13 @@ export default async function AnalyticsPage() {
                 href="/browse"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
               >
-                Browse Startups
+                Browse
               </Link>
               <Link
                 href="/submit"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
               >
-                Submit Your Startup
+                Submit your startup
               </Link>
             </div>
           </div>

@@ -137,19 +137,38 @@ export function BrowseContent({
       {/* Results */}
       {startups.length === 0 ? (
         <div className="bg-white rounded-2xl p-16 text-center border border-gray-200">
-          <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No startups found</h3>
-          <p className="text-gray-600 mb-6 max-w-sm mx-auto">
-            Try adjusting your filters or search terms to find what you're looking for.
-          </p>
-          <Link href="/browse" className="inline-flex items-center text-sm font-semibold text-gray-900 hover:text-gray-700 transition-colors">
-            Clear all filters
-            <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 mb-6">
+            <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
             </svg>
-          </Link>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-3">No startups found</h3>
+          <p className="text-gray-600 mb-2 max-w-md mx-auto">
+            {search || category || location
+              ? "Try adjusting your filters or search terms to find what you're looking for."
+              : "There are no startups available yet. Be the first to submit one!"}
+          </p>
+          {(search || category || location) ? (
+            <Link 
+              href="/browse" 
+              className="inline-flex items-center mt-6 rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+            >
+              Clear all filters
+              <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </Link>
+          ) : (
+            <Link 
+              href="/submit" 
+              className="inline-flex items-center mt-6 rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors"
+            >
+              Submit Your Startup
+              <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </Link>
+          )}
         </div>
       ) : viewMode === "grid" ? (
         <>

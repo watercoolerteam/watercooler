@@ -12,7 +12,7 @@ export default function NotFound() {
           href="/browse"
           className="rounded-md bg-gray-900 px-4 py-2 text-base font-semibold text-white hover:bg-gray-800 transition-colors"
         >
-          Browse Startups
+          Browse
         </Link>
       </div>
     </div>
