@@ -68,6 +68,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/auth/signin",
   },
   callbacks: {
+    async signIn({ user, email }) {
+      // Allow sign-in - NextAuth will create user if they don't exist
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      // After successful sign-in, redirect to dashboard instead of sign-in page
+      if (url.startsWith("/")) {
+        // Relative URL - check if it's the sign-in page
+        if (url === "/auth/signin" || url.startsWith("/auth/signin")) {
+          return `${baseUrl}/dashboard`;
+        }
+        return `${baseUrl}${url}`;
+      }
+      // If URL is on same origin, allow it
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      // Default to dashboard
+      return `${baseUrl}/dashboard`;
+    },
     async session({ session, user }) {
       if (session.user && user) {
         session.user.id = user.id;
@@ -78,4 +98,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "database",
   },
+  debug: process.env.NODE_ENV === "development",
 });

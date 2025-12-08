@@ -21,6 +21,7 @@ export default function SignInPage() {
       const result = await signIn("email", {
         email,
         redirect: false,
+        callbackUrl: "/dashboard",
       });
 
       if (result?.error) {
