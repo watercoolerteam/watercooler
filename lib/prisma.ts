@@ -5,6 +5,7 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 // Optimize Prisma for production with connection pooling
+// Cache Prisma client globally to prevent multiple instances in development
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   // Connection pool configuration
@@ -12,7 +13,11 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
   // For Supabase, connection pooling is handled by the connection string
 })
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Cache the Prisma client globally to prevent multiple instances
+// This is important for both development and production
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = prisma
+}
 
 // Graceful shutdown
 if (typeof process !== 'undefined') {

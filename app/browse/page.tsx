@@ -32,6 +32,12 @@ interface BrowsePageProps {
 
 export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   try {
+    // Check if DATABASE_URL is configured
+    if (!process.env.DATABASE_URL) {
+      console.error("DATABASE_URL environment variable is not set");
+      throw new Error("Database configuration is missing. Please check your environment variables.");
+    }
+
     const params = await searchParams;
     const search = params.search || "";
     const category = params.category || "";
@@ -79,22 +85,50 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       orderBy = { createdAt: "desc" };
     }
 
-    // Get total count for pagination
-    const totalCount = await prisma.startup.count({ where });
+    // Get total count for pagination - with error handling
+    let totalCount = 0;
+    try {
+      totalCount = await prisma.startup.count({ where });
+    } catch (countError) {
+      console.error("Error counting startups:", countError);
+      if (countError instanceof Error) {
+        console.error("Error details:", {
+          message: countError.message,
+          name: countError.name,
+          stack: countError.stack,
+        });
+      }
+      throw countError;
+    }
 
-    // Get paginated startups
+    // Get paginated startups - run queries separately for better error handling
     const skip = (page - 1) * ITEMS_PER_PAGE;
-    const [startups, allStartups] = await Promise.all([
-      prisma.startup.findMany({
+    
+    let startups: any[] = [];
+    let allStartups: any[] = [];
+    
+    try {
+      startups = await prisma.startup.findMany({
         where,
         orderBy,
         skip,
         take: ITEMS_PER_PAGE,
-      }).catch((err) => {
-        console.error("Error fetching paginated startups:", err);
-        throw err;
-      }),
-      prisma.startup.findMany({
+      });
+    } catch (startupsError) {
+      console.error("Error fetching paginated startups:", startupsError);
+      if (startupsError instanceof Error) {
+        console.error("Error details:", {
+          message: startupsError.message,
+          name: startupsError.name,
+          stack: startupsError.stack,
+        });
+      }
+      throw startupsError;
+    }
+
+    // Get filter options - non-blocking, can fail gracefully
+    try {
+      allStartups = await prisma.startup.findMany({
         where: { status: "APPROVED" },
         select: {
           category: true,
@@ -102,12 +136,12 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           companyStage: true,
           financialStage: true,
         },
-      }).catch((err) => {
-        console.error("Error fetching all startups for filters:", err);
-        // Return empty array if this fails, so filters just won't show
-        return [];
-      }),
-    ]);
+      });
+    } catch (filtersError) {
+      console.error("Error fetching all startups for filters:", filtersError);
+      // Continue with empty array - filters just won't show
+      allStartups = [];
+    }
 
     // Safely extract filter options with fallbacks
     const categories = Array.from(
@@ -124,7 +158,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       new Set(allStartups.map((s) => s.financialStage).filter(Boolean))
     ).sort() as FinancialStage[];
 
-    // Ensure we have valid arrays even if queries failed
+    // Ensure we have valid arrays
     const safeStartups = startups || [];
     const safeTotalCount = totalCount || 0;
 
