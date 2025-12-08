@@ -6,6 +6,7 @@ import Image from "next/image";
 import { TrackView } from "./track-view";
 import { StageIcon } from "@/components/stage-icons";
 import { getStageLabel } from "@/lib/stage-utils";
+import { formatFullDate, formatRelativeDate, getEarlyAdopterLabel } from "@/lib/date-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -35,6 +36,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
   };
 }
+
+// Cache startup profiles for 5 minutes
+// This improves performance while still showing relatively fresh data
+export const revalidate = 300;
 
 export default async function StartupPage({ params }: PageProps) {
   try {
@@ -168,6 +173,22 @@ export default async function StartupPage({ params }: PageProps) {
 
           <div className="border-t border-gray-200 pt-6 mt-8">
             <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              {startup.createdAt && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Submitted</dt>
+                  <dd className="mt-1 text-sm text-gray-900">
+                    <div className="flex items-center gap-2">
+                      <span>{formatFullDate(startup.createdAt)}</span>
+                      <span className="text-gray-400">({formatRelativeDate(startup.createdAt)})</span>
+                      {getEarlyAdopterLabel(startup.createdAt) && (
+                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+                          {getEarlyAdopterLabel(startup.createdAt)}
+                        </span>
+                      )}
+                    </div>
+                  </dd>
+                </div>
+              )}
               {startup.category && (
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Category</dt>

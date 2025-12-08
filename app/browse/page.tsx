@@ -13,7 +13,9 @@ export const metadata: Metadata = {
   description: "Browse and discover early-stage startups. Filter by category, location, and more.",
 };
 
-export const dynamic = "force-dynamic";
+// Cache for 5 minutes to improve performance
+// Revalidates automatically when new startups are approved
+export const revalidate = 300;
 
 const ITEMS_PER_PAGE = 12;
 
@@ -69,11 +71,13 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     }
 
     // Determine sort order
-    let orderBy: any = { createdAt: "desc" };
+    let orderBy: any = { createdAt: "desc" }; // Default: newest first
     if (sort === "oldest") {
       orderBy = { createdAt: "asc" };
     } else if (sort === "alphabetical") {
       orderBy = { name: "asc" };
+    } else if (sort === "newest") {
+      orderBy = { createdAt: "desc" };
     }
 
     // Get total count for pagination

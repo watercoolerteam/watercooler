@@ -6,6 +6,8 @@ import { ValidationError, handlePrismaError } from "@/lib/errors";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api-response";
 import { sendSubmissionConfirmationEmail } from "@/lib/email";
 import { Prisma } from "@prisma/client";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
+import { sanitizeString, sanitizeUrl, sanitizeEmail } from "@/lib/sanitize";
 
 const submitSchema = z.object({
   name: z.string().min(1, "Company name is required"),
@@ -35,6 +37,22 @@ const submitSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 5 submissions per hour per IP
+    const clientIP = getClientIP(request);
+    const rateLimit = checkRateLimit(clientIP, {
+      windowMs: 60 * 60 * 1000, // 1 hour
+      maxRequests: 5,
+    });
+
+    if (!rateLimit.allowed) {
+      return createErrorResponse(
+        new ValidationError(
+          `Too many submissions. Please try again after ${new Date(rateLimit.resetAt).toLocaleTimeString()}`
+        ),
+        "Rate limit exceeded"
+      );
+    }
+
     // Parse request body
     let body;
     try {
@@ -43,9 +61,32 @@ export async function POST(request: NextRequest) {
       throw new ValidationError("Invalid JSON in request body");
     }
 
+    // Sanitize string inputs to prevent XSS
+    const sanitizedBody: any = {
+      name: body.name ? sanitizeString(body.name) : body.name,
+      oneLiner: body.oneLiner ? sanitizeString(body.oneLiner) : body.oneLiner,
+      description: body.description ? sanitizeString(body.description) : body.description,
+      website: body.website ? sanitizeUrl(body.website) : body.website,
+      category: body.category ? sanitizeString(body.category) : body.category,
+      location: body.location ? sanitizeString(body.location) : body.location,
+      founderNames: body.founderNames ? sanitizeString(body.founderNames) : body.founderNames,
+      founderEmail: body.founderEmail ? sanitizeEmail(body.founderEmail) : body.founderEmail,
+      founderHighlight: body.founderHighlight ? sanitizeString(body.founderHighlight) : body.founderHighlight,
+      founderXLink: body.founderXLink ? sanitizeUrl(body.founderXLink) : body.founderXLink,
+      founderLinkedInLink: body.founderLinkedInLink ? sanitizeUrl(body.founderLinkedInLink) : body.founderLinkedInLink,
+      logo: body.logo,
+      companyStage: body.companyStage,
+      financialStage: body.financialStage,
+    };
+
+    // Validate email was sanitized correctly
+    if (!sanitizedBody.founderEmail) {
+      throw new ValidationError("Invalid email address");
+    }
+
     // Pre-process: ensure stage fields and optional text fields are either valid enum values or explicitly null
     const processedBody: any = {
-      ...body,
+      ...sanitizedBody,
     };
     
     // Handle stage fields - convert empty strings, undefined, or null to null explicitly
@@ -105,6 +146,61 @@ export async function POST(request: NextRequest) {
 
     if (counter >= maxAttempts) {
       throw new ValidationError("Unable to generate unique URL. Please try a different company name.");
+    }
+
+    // Check for duplicate submissions (same email + similar name)
+    // This prevents the same person from submitting the same startup multiple times
+    const existingByEmail = await prisma.startup.findFirst({
+      where: {
+        founderEmail: validatedData.founderEmail,
+        name: {
+          equals: validatedData.name,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    if (existingByEmail) {
+      if (existingByEmail.status === "PENDING") {
+        throw new ValidationError(
+          "You already have a pending submission for this startup. Please wait for approval."
+        );
+      } else if (existingByEmail.status === "APPROVED") {
+        throw new ValidationError(
+          "This startup has already been submitted and approved. If you need to make changes, please claim your startup page."
+        );
+      }
+    }
+
+    // Also check for similar names (fuzzy duplicate detection)
+    // This catches cases where someone tries to submit "My Startup" and "My Startup Inc"
+    const similarName = await prisma.startup.findFirst({
+      where: {
+        name: {
+          contains: validatedData.name.substring(0, Math.min(20, validatedData.name.length)),
+          mode: "insensitive",
+        },
+        founderEmail: validatedData.founderEmail,
+        status: {
+          in: ["PENDING", "APPROVED"],
+        },
+      },
+    });
+
+    if (similarName && similarName.id) {
+      // Only flag if names are very similar (more than 80% match)
+      const name1 = validatedData.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const name2 = similarName.name.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const similarity = name1.length > 0 && name2.length > 0 
+        ? (name1.includes(name2.substring(0, Math.min(10, name2.length))) || 
+           name2.includes(name1.substring(0, Math.min(10, name1.length))))
+        : false;
+
+      if (similarity) {
+        throw new ValidationError(
+          "A similar startup has already been submitted with this email. Please check your existing submissions."
+        );
+      }
     }
 
     // Create startup

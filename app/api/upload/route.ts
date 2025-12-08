@@ -3,6 +3,7 @@ import sharp from "sharp";
 import { createErrorResponse, createSuccessResponse } from "@/lib/api-response";
 import { ValidationError } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 
 // Maximum file size: 5MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -10,6 +11,22 @@ const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "im
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 10 uploads per hour per IP
+    const clientIP = getClientIP(request);
+    const rateLimit = checkRateLimit(clientIP, {
+      windowMs: 60 * 60 * 1000, // 1 hour
+      maxRequests: 10,
+    });
+
+    if (!rateLimit.allowed) {
+      return createErrorResponse(
+        new ValidationError(
+          `Too many uploads. Please try again after ${new Date(rateLimit.resetAt).toLocaleTimeString()}`
+        ),
+        "Rate limit exceeded"
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 

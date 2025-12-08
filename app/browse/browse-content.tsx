@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Startup } from "@prisma/client";
 import { StageIcon } from "@/components/stage-icons";
 import { getStageLabel } from "@/lib/stage-utils";
+import { formatRelativeDate, getEarlyAdopterLabel } from "@/lib/date-utils";
 
 interface BrowseContentProps {
   startups: Startup[];
@@ -31,7 +32,7 @@ export function BrowseContent({
 }: BrowseContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
   const buildUrl = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -227,62 +228,44 @@ function StartupCard({ startup }: { startup: Startup }) {
 
       {/* Stage Icons */}
       {(startup.companyStage || startup.financialStage) && (
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
           {startup.companyStage && (
-            <div 
-              className="relative group/company-icon" 
-              title={getStageLabel(startup.companyStage, "company")}
-              onClick={(e) => e.stopPropagation()}
-              onMouseEnter={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all cursor-help">
-                <StageIcon stage={startup.companyStage} type="company" className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md whitespace-nowrap invisible group-hover/company-icon:visible pointer-events-none z-[100] shadow-lg">
-                {getStageLabel(startup.companyStage, "company")}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-              </div>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 border border-gray-200">
+              <StageIcon stage={startup.companyStage} type="company" className="h-3.5 w-3.5 text-gray-600" />
+              <span className="text-xs font-medium text-gray-700">{getStageLabel(startup.companyStage, "company")}</span>
             </div>
           )}
           {startup.financialStage && (
-            <div 
-              className="relative group/financial-icon" 
-              title={getStageLabel(startup.financialStage, "financial")}
-              onClick={(e) => e.stopPropagation()}
-              onMouseEnter={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 transition-all cursor-help">
-                <StageIcon stage={startup.financialStage} type="financial" className="h-4 w-4 text-green-600" />
-              </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md whitespace-nowrap invisible group-hover/financial-icon:visible pointer-events-none z-[100] shadow-lg">
-                {getStageLabel(startup.financialStage, "financial")}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-              </div>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 border border-gray-200">
+              <StageIcon stage={startup.financialStage} type="financial" className="h-3.5 w-3.5 text-gray-600" />
+              <span className="text-xs font-medium text-gray-700">{getStageLabel(startup.financialStage, "financial")}</span>
             </div>
           )}
         </div>
       )}
 
+      {/* Founder Highlight */}
+      {startup.founderHighlight && (
+        <div className="mb-4 flex items-start gap-2 pl-3 border-l-2 border-gray-300">
+          <svg className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+            {startup.founderHighlight}
+          </p>
+        </div>
+      )}
+
         <div className="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-100">
-          {startup.founderHighlight && (
-            <div className="relative group/founder-icon">
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all cursor-help">
-                <svg className="h-4 w-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Founder">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md whitespace-nowrap invisible group-hover/founder-icon:visible pointer-events-none z-[100] shadow-lg">
-                {startup.founderHighlight}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-              </div>
-            </div>
+          {startup.createdAt && (
+            <span className="text-gray-500">{formatRelativeDate(startup.createdAt)}</span>
           )}
           {startup.website && (
-            <div className="flex items-center gap-1.5 text-gray-400 group-hover:text-gray-600 transition-colors">
+            <div className="flex items-center gap-1 text-gray-400 group-hover:text-gray-600 transition-colors">
               <span className="font-medium truncate max-w-[120px]">
                 {startup.website.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]}
               </span>
-              <svg className="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-3 w-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </div>
@@ -356,55 +339,41 @@ function StartupListItem({ startup }: { startup: Startup }) {
               <span className="font-medium">{startup.location}</span>
             </div>
           )}
-          {startup.founderHighlight && (
-            <div className="relative group/founder-icon">
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-all cursor-help">
-                <svg className="h-4 w-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Founder">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md whitespace-nowrap invisible group-hover/founder-icon:visible pointer-events-none z-[100] shadow-lg">
-                {startup.founderHighlight}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-              </div>
-            </div>
+          {startup.createdAt && (
+            <span className="text-xs text-gray-500">{formatRelativeDate(startup.createdAt)}</span>
           )}
           {/* Stage Icons */}
-          <div className="flex items-center gap-2 ml-auto">
-            {startup.companyStage && (
-              <div 
-                className="relative group/company-icon" 
-                title={getStageLabel(startup.companyStage, "company")}
-                onClick={(e) => e.stopPropagation()}
-                onMouseEnter={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all cursor-help">
-                  <StageIcon stage={startup.companyStage} type="company" className="h-4 w-4 text-blue-600" />
+          {(startup.companyStage || startup.financialStage) && (
+            <div className="flex items-center gap-2 ml-auto">
+              {startup.companyStage && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 border border-gray-200">
+                  <StageIcon stage={startup.companyStage} type="company" className="h-3.5 w-3.5 text-gray-600" />
+                  <span className="text-xs font-medium text-gray-700">{getStageLabel(startup.companyStage, "company")}</span>
                 </div>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md whitespace-nowrap invisible group-hover/company-icon:visible pointer-events-none z-[100] shadow-lg">
-                  {getStageLabel(startup.companyStage, "company")}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+              )}
+              {startup.financialStage && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 border border-gray-200">
+                  <StageIcon stage={startup.financialStage} type="financial" className="h-3.5 w-3.5 text-gray-600" />
+                  <span className="text-xs font-medium text-gray-700">{getStageLabel(startup.financialStage, "financial")}</span>
                 </div>
-              </div>
-            )}
-            {startup.financialStage && (
-              <div 
-                className="relative group/financial-icon" 
-                title={getStageLabel(startup.financialStage, "financial")}
-                onClick={(e) => e.stopPropagation()}
-                onMouseEnter={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 transition-all cursor-help">
-                  <StageIcon stage={startup.financialStage} type="financial" className="h-4 w-4 text-green-600" />
-                </div>
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-md whitespace-nowrap invisible group-hover/financial-icon:visible pointer-events-none z-[100] shadow-lg">
-                  {getStageLabel(startup.financialStage, "financial")}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Founder Highlight */}
+        {startup.founderHighlight && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="flex items-start gap-2 pl-3 border-l-2 border-gray-300">
+              <svg className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <p className="text-xs text-gray-600 leading-relaxed line-clamp-1">
+                {startup.founderHighlight}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </Link>
   );
