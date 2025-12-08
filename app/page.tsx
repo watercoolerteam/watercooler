@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { AuthNav } from "@/components/auth-nav";
 
 export default function Home() {
   return (
@@ -29,6 +30,7 @@ export default function Home() {
               >
                 Browse Startups
               </Link>
+              <AuthNav />
               <Link
                 href="/submit"
                 className="rounded-md bg-gray-900 px-3 py-2 sm:px-4 text-sm font-medium text-white hover:bg-gray-800 transition-colors"

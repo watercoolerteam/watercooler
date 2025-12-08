@@ -7,6 +7,7 @@ import { BrowseContent } from "./browse-content";
 import { BrowseSidebar } from "./browse-sidebar";
 import { SearchBar } from "./search-bar";
 import { MobileFilters } from "@/components/mobile-filters";
+import { AuthNav } from "@/components/auth-nav";
 
 export const metadata: Metadata = {
   title: "Browse Startups | Watercooler",
@@ -228,6 +229,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
                 </span>
               </Link>
               <div className="hidden sm:flex items-center gap-4 sm:gap-6">
+                <AuthNav />
                 <Link
                   href="/submit"
                   className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"

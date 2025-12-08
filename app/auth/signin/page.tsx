@@ -110,10 +110,10 @@ export default function SignInPage() {
 
       <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="bg-white shadow-sm rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In or Sign Up</h1>
           <p className="text-gray-600 mb-8">
-            Enter your email address and we'll send you a sign-in link. No
-            password required.
+            Enter your email address and we'll send you a magic link. No password required.
+            This works for both new and existing users.
           </p>
 
           {error && (
@@ -138,10 +138,10 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                placeholder="founder@yourstartup.com"
+                placeholder="your@email.com"
               />
               <p className="mt-1 text-sm text-gray-500">
-                Use the email address associated with your claimed startup(s).
+                We'll create an account for you if you don't have one yet.
               </p>
             </div>
 
@@ -151,18 +151,17 @@ export default function SignInPage() {
                 disabled={isLoading}
                 className="w-full rounded-md bg-gray-900 px-4 py-3 text-base font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? "Sending..." : "Send Sign-In Link"}
+                {isLoading ? "Sending..." : "Send Magic Link"}
               </button>
             </div>
           </form>
 
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-600 text-center">
-              Don't have an account?{" "}
+              Want to claim your startup?{" "}
               <Link href="/claim" className="text-gray-900 font-medium hover:text-gray-700">
                 Claim your startup
-              </Link>{" "}
-              to create one.
+              </Link>
             </p>
           </div>
         </div>

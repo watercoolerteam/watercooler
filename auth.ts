@@ -38,7 +38,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 </div>
                 
                 <div style="background: white; padding: 40px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-                  <p style="font-size: 18px; margin-top: 0;">Click the button below to sign in to your Watercooler account:</p>
+                  <p style="font-size: 18px; margin-top: 0;">Click the button below to sign in to your Watercooler account. If you don't have an account yet, we'll create one for you automatically.</p>
                   
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${url}" style="display: inline-block; background: #111827; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">Sign In</a>
