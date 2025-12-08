@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,7 +20,7 @@ interface VerificationResult {
   }>;
 }
 
-export default function VerifyClaimPage() {
+function VerifyClaimContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [state, setState] = useState<VerificationState>("loading");
@@ -248,5 +248,38 @@ export default function VerifyClaimPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function VerifyClaimPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 mb-4 animate-pulse">
+              <svg
+                className="h-6 w-6 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Loading...
+            </h2>
+          </div>
+        </div>
+      }
+    >
+      <VerifyClaimContent />
+    </Suspense>
   );
 }

@@ -10,7 +10,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true, // Required for production
   providers: [
     Email({
-      server: "", // Empty string to disable nodemailer
+      // Provide minimal server config to satisfy NextAuth validation
+      // We override sendVerificationRequest to use Resend instead
+      server: {
+        host: "smtp.resend.com",
+        port: 465,
+        auth: {
+          user: "resend",
+          pass: process.env.RESEND_API_KEY || "",
+        },
+      },
       from: process.env.EMAIL_FROM || "Watercooler <onboarding@resend.dev>",
       sendVerificationRequest: async ({ identifier, url }) => {
         await sendEmail({
