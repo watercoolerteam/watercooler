@@ -22,7 +22,13 @@ You need to use **Transaction Mode Pooler** (port 6543) for Vercel/serverless en
      ```
      postgresql://postgres.jjgvsmuvkbhfkwcesrcw:[YOUR-PASSWORD]@aws-0-us-west-2.pooler.supabase.com:6543/postgres
      ```
-   - **Important**: Notice it uses port **6543** (transaction mode), not 5432 (session mode)
+   - **CRITICAL**: Add `?pgbouncer=true` to the end of the connection string:
+     ```
+     postgresql://postgres.jjgvsmuvkbhfkwcesrcw:[YOUR-PASSWORD]@aws-0-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true
+     ```
+   - **Important**: 
+     - Notice it uses port **6543** (transaction mode), not 5432 (session mode)
+     - The `?pgbouncer=true` parameter is REQUIRED to disable prepared statements (Transaction Mode doesn't support them)
 
 3. **Update Vercel Environment Variable**
    - Go to your Vercel project dashboard
@@ -48,3 +54,7 @@ But this is **not recommended** for serverless/Vercel as it doesn't scale well.
 - **Transaction Mode** (port 6543) is optimized for serverless/serverless functions
 - **Session Mode** (port 5432) is for persistent connections (not suitable for Vercel)
 - **Direct Connection** works but doesn't scale well for serverless
+- **`?pgbouncer=true` is REQUIRED** - Transaction Mode doesn't support prepared statements, so Prisma needs this parameter to disable them
+
+## Common Error: "prepared statement already exists"
+If you see this error, it means you forgot to add `?pgbouncer=true` to your connection string. Make sure your `DATABASE_URL` ends with `?pgbouncer=true`.
