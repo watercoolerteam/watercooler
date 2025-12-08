@@ -47,33 +47,46 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     const page = parseInt(params.page || "1", 10);
     const sort = params.sort || "newest";
 
-    const where: any = {
-      status: "APPROVED",
-    };
+    // Build where clause safely - use AND array to properly combine OR with other filters
+    const whereConditions: any[] = [
+      { status: "APPROVED" },
+    ];
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { oneLiner: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-      ];
+    // Add search filter if provided
+    if (search && search.trim()) {
+      whereConditions.push({
+        OR: [
+          { name: { contains: search.trim(), mode: "insensitive" } },
+          { oneLiner: { contains: search.trim(), mode: "insensitive" } },
+          { description: { contains: search.trim(), mode: "insensitive" } },
+        ],
+      });
     }
 
-    if (category) {
-      where.category = category;
+    // Add category filter if provided
+    if (category && category.trim()) {
+      whereConditions.push({ category: category.trim() });
     }
 
-    if (location) {
-      where.location = { contains: location, mode: "insensitive" };
+    // Add location filter if provided
+    if (location && location.trim()) {
+      whereConditions.push({
+        location: { contains: location.trim(), mode: "insensitive" },
+      });
     }
 
-    if (companyStage) {
-      where.companyStage = companyStage;
+    // Add company stage filter if provided
+    if (companyStage && companyStage.trim()) {
+      whereConditions.push({ companyStage: companyStage.trim() as any });
     }
 
-    if (financialStage) {
-      where.financialStage = financialStage;
+    // Add financial stage filter if provided
+    if (financialStage && financialStage.trim()) {
+      whereConditions.push({ financialStage: financialStage.trim() as any });
     }
+
+    // Combine all conditions with AND
+    const where = whereConditions.length > 1 ? { AND: whereConditions } : whereConditions[0];
 
     // Determine sort order
     let orderBy: any = { createdAt: "desc" }; // Default: newest first
@@ -85,16 +98,41 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       orderBy = { createdAt: "desc" };
     }
 
+    // Test with simplest query first to verify database connection
+    let testQuery;
+    try {
+      testQuery = await prisma.startup.findFirst({
+        where: { status: "APPROVED" },
+        select: { id: true },
+      });
+      console.log("Database connection test successful");
+    } catch (testError) {
+      console.error("CRITICAL: Database connection test failed:", testError);
+      if (testError instanceof Error) {
+        console.error("Test error details:", {
+          message: testError.message,
+          name: testError.name,
+          code: (testError as any).code,
+          meta: (testError as any).meta,
+        });
+      }
+      throw new Error(`Database connection failed: ${testError instanceof Error ? testError.message : 'Unknown error'}`);
+    }
+
     // Get total count for pagination - with error handling
     let totalCount = 0;
     try {
+      console.log("Executing count query with where:", JSON.stringify(where, null, 2));
       totalCount = await prisma.startup.count({ where });
+      console.log("Count query successful, totalCount:", totalCount);
     } catch (countError) {
       console.error("Error counting startups:", countError);
       if (countError instanceof Error) {
-        console.error("Error details:", {
+        console.error("Count error details:", {
           message: countError.message,
           name: countError.name,
+          code: (countError as any).code,
+          meta: (countError as any).meta,
           stack: countError.stack,
         });
       }
@@ -108,18 +146,22 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     let allStartups: any[] = [];
     
     try {
+      console.log("Executing findMany query with where:", JSON.stringify(where, null, 2), "orderBy:", orderBy, "skip:", skip, "take:", ITEMS_PER_PAGE);
       startups = await prisma.startup.findMany({
         where,
         orderBy,
         skip,
         take: ITEMS_PER_PAGE,
       });
+      console.log("FindMany query successful, returned", startups.length, "startups");
     } catch (startupsError) {
       console.error("Error fetching paginated startups:", startupsError);
       if (startupsError instanceof Error) {
-        console.error("Error details:", {
+        console.error("FindMany error details:", {
           message: startupsError.message,
           name: startupsError.name,
+          code: (startupsError as any).code,
+          meta: (startupsError as any).meta,
           stack: startupsError.stack,
         });
       }
@@ -137,6 +179,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           financialStage: true,
         },
       });
+      console.log("Filter query successful, returned", allStartups.length, "startups for filters");
     } catch (filtersError) {
       console.error("Error fetching all startups for filters:", filtersError);
       // Continue with empty array - filters just won't show
