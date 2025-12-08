@@ -13,9 +13,8 @@ export const metadata: Metadata = {
   description: "Browse and discover early-stage startups. Filter by category, location, and more.",
 };
 
-// Cache for 5 minutes to improve performance
-// Revalidates automatically when new startups are approved
-export const revalidate = 300;
+// Page must be dynamic because it uses searchParams
+export const dynamic = 'force-dynamic';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -91,6 +90,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         orderBy,
         skip,
         take: ITEMS_PER_PAGE,
+      }).catch((err) => {
+        console.error("Error fetching paginated startups:", err);
+        throw err;
       }),
       prisma.startup.findMany({
         where: { status: "APPROVED" },
@@ -100,9 +102,14 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           companyStage: true,
           financialStage: true,
         },
+      }).catch((err) => {
+        console.error("Error fetching all startups for filters:", err);
+        // Return empty array if this fails, so filters just won't show
+        return [];
       }),
     ]);
 
+    // Safely extract filter options with fallbacks
     const categories = Array.from(
       new Set(allStartups.map((s) => s.category).filter(Boolean))
     ).sort();
@@ -117,7 +124,11 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       new Set(allStartups.map((s) => s.financialStage).filter(Boolean))
     ).sort() as FinancialStage[];
 
-    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+    // Ensure we have valid arrays even if queries failed
+    const safeStartups = startups || [];
+    const safeTotalCount = totalCount || 0;
+
+    const totalPages = Math.ceil(safeTotalCount / ITEMS_PER_PAGE);
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -189,7 +200,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
               locations={locations}
               allCompanyStages={allCompanyStages as CompanyStage[]}
               allFinancialStages={allFinancialStages as FinancialStage[]}
-              totalCount={totalCount}
+              totalCount={safeTotalCount}
             />
           </div>
 
@@ -204,16 +215,16 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
               locations={locations}
               allCompanyStages={allCompanyStages as CompanyStage[]}
               allFinancialStages={allFinancialStages as FinancialStage[]}
-              totalCount={totalCount}
+              totalCount={safeTotalCount}
             />
 
             {/* Main Content */}
             <div className="flex-1 min-w-0">
               <BrowseContent
-                startups={startups}
+                startups={safeStartups}
                 currentPage={page}
                 totalPages={totalPages}
-                totalCount={totalCount}
+                totalCount={safeTotalCount}
                 search={search}
                 category={category}
                 location={location}
@@ -233,20 +244,55 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       </div>
     );
   } catch (error) {
+    // Log detailed error information
     console.error("Error loading browse page:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+    
+    // Check if it's a Prisma error
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const isDatabaseError = errorMessage.includes("Prisma") || 
+                           errorMessage.includes("database") ||
+                           errorMessage.includes("connection");
+    
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Page</h1>
-          <p className="text-gray-600 mb-6">
-            We encountered an error while loading the startups. Please try again.
+          <p className="text-gray-600 mb-2">
+            {isDatabaseError 
+              ? "We're having trouble connecting to the database. Please try again in a moment."
+              : "We encountered an error while loading the startups. Please try again."}
           </p>
-          <Link
-            href="/browse"
-            className="rounded-md bg-gray-900 px-4 py-2 text-base font-semibold text-white hover:bg-gray-800 transition-colors"
-          >
-            Refresh Page
-          </Link>
+          {process.env.NODE_ENV === 'development' && error instanceof Error && (
+            <details className="mt-4 text-left bg-red-50 p-4 rounded-lg border border-red-200">
+              <summary className="text-sm font-semibold text-red-800 cursor-pointer">
+                Error Details (Development Only)
+              </summary>
+              <pre className="mt-2 text-xs text-red-700 overflow-auto">
+                {error.message}
+                {error.stack && `\n\n${error.stack}`}
+              </pre>
+            </details>
+          )}
+          <div className="mt-6 space-y-3">
+            <Link
+              href="/browse"
+              className="inline-block rounded-md bg-gray-900 px-4 py-2 text-base font-semibold text-white hover:bg-gray-800 transition-colors"
+            >
+              Refresh Page
+            </Link>
+            <div>
+              <Link
+                href="/"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Return to Home
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     );
