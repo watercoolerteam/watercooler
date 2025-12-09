@@ -27,8 +27,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        // Normalize email to lowercase to match how emails are stored (via sanitizeEmail)
+        const normalizedEmail = (credentials.email as string).toLowerCase().trim();
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: normalizedEmail },
           include: {
             accounts: {
               where: { provider: "credentials" },

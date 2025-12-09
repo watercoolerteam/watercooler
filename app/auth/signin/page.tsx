@@ -29,6 +29,13 @@ export default function SignInPage() {
           return;
         }
 
+        // Validate password length to match API requirements (8 characters minimum)
+        if (password.length < 8) {
+          setError("Password must be at least 8 characters");
+          setIsLoading(false);
+          return;
+        }
+
         result = await signIn("credentials", {
           email,
           password,
@@ -241,6 +248,7 @@ export default function SignInPage() {
                 id="email"
                 name="email"
                 required
+                  minLength={8}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
@@ -261,11 +269,14 @@ export default function SignInPage() {
                   id="password"
                   name="password"
                   required
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                  placeholder="Enter your password"
-                />
+                  placeholder="Enter your password"/>
+                <p className="mt-1 text-sm text-gray-500">
+                  Must be at least 8 characters
+                </p>
               </div>
             )}
 

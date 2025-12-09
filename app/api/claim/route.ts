@@ -32,11 +32,14 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
+    // Normalize email to lowercase to match how emails are stored (via sanitizeEmail)
+    const normalizedEmail = validatedData.email.toLowerCase().trim();
+
     // Find startups for this email
     try {
       const startups = await prisma.startup.findMany({
         where: {
-          founderEmail: validatedData.email,
+          founderEmail: normalizedEmail,
           status: "APPROVED",
         },
         select: {
@@ -76,7 +79,7 @@ export async function POST(request: NextRequest) {
       let token: string;
       try {
         token = await createClaimToken(
-          validatedData.email,
+          normalizedEmail,
           unclaimedStartups.map((s) => s.id),
           24 // 24 hour expiration
         );
@@ -87,7 +90,7 @@ export async function POST(request: NextRequest) {
 
       // Send claim email with verification link
       const emailResult = await sendClaimEmail(
-        validatedData.email,
+        normalizedEmail,
         unclaimedStartups.map((s) => ({ name: s.name, slug: s.slug })),
         token
       );
