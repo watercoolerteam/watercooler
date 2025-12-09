@@ -144,42 +144,57 @@ export default async function StartupPage({ params }: PageProps) {
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="bg-white shadow-sm rounded-lg p-6 sm:p-8 mb-6">
-          <div className="flex items-start gap-6">
-            {startup.logo && (
+          <div className="flex items-start justify-between gap-6">
+            <div className="flex items-start gap-6 flex-1 min-w-0">
+              {startup.logo && (
+                <div className="flex-shrink-0">
+                  <Image
+                    src={startup.logo}
+                    alt={`${startup.name} logo`}
+                    width={80}
+                    height={80}
+                    className="rounded-lg object-contain"
+                    unoptimized
+                  />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+                  {startup.name}
+                </h1>
+                {startup.oneLiner && (
+                  <p className="text-lg sm:text-xl text-gray-600 mb-3">
+                    {startup.oneLiner}
+                  </p>
+                )}
+                {startup.website && (
+                  <a
+                    href={startup.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 text-base inline-flex items-center gap-1.5 font-medium"
+                  >
+                    {startup.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            </div>
+            {isOwner && (
               <div className="flex-shrink-0">
-                <Image
-                  src={startup.logo}
-                  alt={`${startup.name} logo`}
-                  width={80}
-                  height={80}
-                  className="rounded-lg object-contain"
-                  unoptimized
-                />
+                <Link
+                  href={`/startup/${startup.slug}/edit`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </Link>
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                {startup.name}
-              </h1>
-              {startup.oneLiner && (
-                <p className="text-lg sm:text-xl text-gray-600 mb-3">
-                  {startup.oneLiner}
-                </p>
-              )}
-              {startup.website && (
-                <a
-                  href={startup.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 text-base inline-flex items-center gap-1.5 font-medium"
-                >
-                  {startup.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-              )}
-            </div>
           </div>
         </div>
 
@@ -254,36 +269,23 @@ export default async function StartupPage({ params }: PageProps) {
               {/* Claim Status - at bottom of details with grey line separator */}
               {startup.claimedBy ? (
                 <div className="mt-6 pt-6 border-t border-gray-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="h-5 w-5 text-green-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="text-sm font-medium text-gray-900">
-                        Claimed
-                      </span>
-                    </div>
-                    {isOwner && (
-                      <Link
-                        href={`/startup/${startup.slug}/edit`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                      </Link>
-                    )}
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg
+                      className="h-5 w-5 text-green-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-900">
+                      Claimed
+                    </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-3">
                     This startup has been claimed by its founder.
