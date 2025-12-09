@@ -9,6 +9,8 @@ import { getStageLabel } from "@/lib/stage-utils";
 import { formatFullDate, formatRelativeDate, getEarlyAdopterLabel } from "@/lib/date-utils";
 import { AuthNav } from "@/components/auth-nav";
 import { auth } from "@/auth";
+import { UpdateFeed } from "@/components/update-feed";
+import { AddUpdateForm } from "@/components/add-update-form";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -104,6 +106,30 @@ export default async function StartupPage({ params }: PageProps) {
         where: { email: session.user.email },
       });
       isOwner = user?.id === startup.claimedBy;
+    }
+
+    // Fetch updates (with error handling in case table doesn't exist yet)
+    let updates: Array<{
+      id: string;
+      content: string;
+      updateNumber: number;
+      createdAt: Date;
+    }> = [];
+    try {
+      updates = await prisma.startupUpdate.findMany({
+        where: { startupId: startup.id },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          content: true,
+          updateNumber: true,
+          createdAt: true,
+        },
+      });
+    } catch (error) {
+      // If the table doesn't exist yet, just use empty array
+      console.error("Error fetching updates:", error);
+      updates = [];
     }
 
   return (
@@ -369,6 +395,18 @@ export default async function StartupPage({ params }: PageProps) {
             )}
 
           </div>
+        </div>
+
+        {/* Updates Section */}
+        <div className="mt-8 space-y-6">
+          {isOwner && (
+            <AddUpdateForm startupSlug={startup.slug} />
+          )}
+          <UpdateFeed 
+            updates={updates} 
+            startupSlug={startup.slug}
+            isOwner={isOwner}
+          />
         </div>
       </main>
 

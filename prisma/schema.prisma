@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_DATABASE_URL") // Optional: Direct connection for migrations (if different from DATABASE_URL)
+  // directUrl is optional - only needed if different from DATABASE_URL
 }
 
 model Startup {
@@ -35,6 +35,7 @@ model Startup {
   
   user              User?    @relation(fields: [claimedBy], references: [id])
   claimTokens       ClaimTokenStartup[]
+  updates           StartupUpdate[]
   
   @@index([status])
   @@index([slug])
@@ -145,4 +146,18 @@ enum FinancialStage {
   RAISING_SOON
   RAISING
   FUNDED
+}
+
+model StartupUpdate {
+  id           String   @id @default(cuid())
+  startupId    String
+  content      String   @db.Text
+  updateNumber Int
+  createdAt    DateTime @default(now())
+  
+  startup      Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  
+  @@index([startupId])
+  @@index([createdAt])
+  @@index([startupId, updateNumber])
 }
