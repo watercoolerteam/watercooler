@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { User } from "@prisma/client";
+import { ProfileNav } from "@/components/profile-nav";
 
 interface EditProfileFormProps {
   user: User;
@@ -98,14 +99,7 @@ export default function EditProfileForm({ user }: EditProfileFormProps) {
               >
                 Submit your startup
               </Link>
-              <form action="/api/auth/signout" method="POST">
-                <button
-                  type="submit"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
-                >
-                  Sign Out
-                </button>
-              </form>
+              <ProfileNav />
             </div>
           </div>
         </div>
