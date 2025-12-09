@@ -1,8 +1,41 @@
 import Link from "next/link";
 import Image from "next/image";
 import { AuthNav } from "@/components/auth-nav";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+export const revalidate = 300; // Revalidate every 5 minutes
+
+async function getStats() {
+  try {
+    const [totalStartups, totalViewsResult] = await Promise.all([
+      prisma.startup.count({
+        where: { status: "APPROVED" },
+      }),
+      prisma.startup.aggregate({
+        where: { status: "APPROVED" },
+        _sum: { views: true },
+      }),
+    ]);
+
+    const totalViews = totalViewsResult._sum.views || 0;
+
+    return {
+      totalStartups,
+      totalViews,
+    };
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    // Return default values if there's an error
+    return {
+      totalStartups: 0,
+      totalViews: 0,
+    };
+  }
+}
+
+export default async function Home() {
+  const stats = await getStats();
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <nav className="border-b border-gray-200 bg-white">
@@ -52,7 +85,7 @@ export default function Home() {
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center py-12 sm:py-24 lg:py-32 px-4">
+        <div className="mx-auto max-w-3xl text-center py-8 sm:py-16 lg:py-20 px-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-gray-900">
             This is where new startups get discovered.
           </h1>
@@ -61,7 +94,7 @@ export default function Home() {
             Founders can submit their startup, and scouts, investors, and operators 
             can freely browse, search, and discover the next big thing.
           </p>
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6">
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6">
             <Link
               href="/browse"
               className="w-full sm:w-auto rounded-md bg-gray-900 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 transition-colors text-center"
@@ -74,6 +107,29 @@ export default function Home() {
             >
               Submit Your Startup <span aria-hidden="true">→</span>
             </Link>
+          </div>
+
+          {/* Stats Section - Compact, visible above fold */}
+          <div className="mt-10 sm:mt-12">
+            <div className="flex items-center justify-center gap-8 sm:gap-16">
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-1">
+                  {stats.totalStartups.toLocaleString()}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-600 font-medium">
+                  Startups Listed
+                </div>
+              </div>
+              <div className="h-12 w-px bg-gray-300"></div>
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-1">
+                  {stats.totalViews.toLocaleString()}
+                </div>
+                <div className="text-xs sm:text-sm text-gray-600 font-medium">
+                  Total Views
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
