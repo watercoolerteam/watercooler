@@ -28,6 +28,8 @@ model Startup {
   financialStage    FinancialStage?
   status            StartupStatus @default(PENDING)
   views             Int           @default(0)
+  updateCount       Int           @default(0)
+  lastUpdateAt      DateTime?
   claimedBy         String?
   claimedAt         DateTime?
   createdAt         DateTime @default(now())

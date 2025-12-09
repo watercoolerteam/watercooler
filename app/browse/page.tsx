@@ -153,6 +153,16 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         orderBy,
         skip,
         take: ITEMS_PER_PAGE,
+        include: {
+          updates: {
+            select: {
+              content: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            take: 1, // Only get the most recent update
+          },
+        },
       });
       console.log("FindMany query successful, returned", startups.length, "startups");
     } catch (startupsError) {

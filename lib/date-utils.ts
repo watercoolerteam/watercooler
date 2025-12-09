@@ -79,3 +79,15 @@ export function getEarlyAdopterLabel(date: Date | string): string | null {
   }
   return null;
 }
+
+/**
+ * Check if a date is within the last N hours
+ */
+export function isWithinLastHours(date: Date | string | null, hours: number): boolean {
+  if (!date) return false;
+  const then = typeof date === "string" ? new Date(date) : date;
+  const now = new Date();
+  const diffMs = now.getTime() - then.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  return diffHours <= hours && diffHours >= 0;
+}

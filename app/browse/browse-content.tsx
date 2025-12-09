@@ -7,10 +7,16 @@ import Image from "next/image";
 import { Startup } from "@prisma/client";
 import { StageIcon } from "@/components/stage-icons";
 import { getStageLabel } from "@/lib/stage-utils";
-import { formatRelativeDate, getEarlyAdopterLabel } from "@/lib/date-utils";
+import { formatRelativeDate, getEarlyAdopterLabel, isWithinLastHours } from "@/lib/date-utils";
+import { UpdateTooltip } from "@/components/update-tooltip";
 
 interface BrowseContentProps {
-  startups: Startup[];
+  startups: (Startup & {
+    updates?: Array<{
+      content: string;
+      createdAt: Date;
+    }>;
+  })[];
   currentPage: number;
   totalPages: number;
   totalCount: number;
@@ -193,15 +199,23 @@ export function BrowseContent({
   );
 }
 
-function StartupCard({ startup }: { startup: Startup }) {
+function StartupCard({ startup }: { startup: Startup & { updates?: Array<{ content: string; createdAt: Date }> } }) {
+  const hasRecentUpdate = isWithinLastHours(startup.lastUpdateAt, 24);
+  const updateCount = (startup as any).updateCount || 0;
+
   return (
     <Link
       href={`/startup/${startup.slug}`}
-      className="group bg-white rounded-xl border border-gray-200 p-6 transition-all hover:border-gray-300 hover:shadow-lg"
+      className="group bg-white rounded-xl border border-gray-200 p-6 transition-all hover:border-gray-300 hover:shadow-lg relative"
     >
+      {/* Update indicator - green dot */}
+      {hasRecentUpdate && (
+        <div className="absolute top-4 right-4 h-3 w-3 bg-green-500 rounded-full border-2 border-white shadow-sm" title="Updated in the last 24 hours" />
+      )}
+
       <div className="flex items-start gap-4 mb-4">
         {startup.logo ? (
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 relative">
             <div className="relative h-14 w-14 rounded-lg bg-gray-50 border border-gray-100 overflow-hidden flex items-center justify-center">
               <Image
                 src={startup.logo}
@@ -233,6 +247,19 @@ function StartupCard({ startup }: { startup: Startup }) {
           <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
             {startup.category}
           </span>
+        )}
+        {updateCount > 0 && (
+          <UpdateTooltip
+            updateCount={updateCount}
+            latestUpdate={startup.updates?.[0] || null}
+          >
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-700 cursor-help">
+              <svg className="h-3.5 w-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {updateCount} {updateCount === 1 ? "update" : "updates"}
+            </span>
+          </UpdateTooltip>
         )}
         {startup.location && (
           <span className="inline-flex items-center gap-1.5 text-xs text-gray-600">
@@ -294,7 +321,10 @@ function StartupCard({ startup }: { startup: Startup }) {
   );
 }
 
-function StartupListItem({ startup }: { startup: Startup }) {
+function StartupListItem({ startup }: { startup: Startup & { updates?: Array<{ content: string; createdAt: Date }> } }) {
+  const hasRecentUpdate = isWithinLastHours(startup.lastUpdateAt, 24);
+  const updateCount = (startup as any).updateCount || 0;
+
   return (
     <Link
       href={`/startup/${startup.slug}`}
@@ -363,7 +393,7 @@ function StartupListItem({ startup }: { startup: Startup }) {
           )}
           {/* Stage Icons */}
           {(startup.companyStage || startup.financialStage) && (
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-2">
               {startup.companyStage && (
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 border border-gray-200">
                   <StageIcon stage={startup.companyStage} type="company" className="h-3.5 w-3.5 text-gray-600" />
@@ -375,6 +405,25 @@ function StartupListItem({ startup }: { startup: Startup }) {
                   <StageIcon stage={startup.financialStage} type="financial" className="h-3.5 w-3.5 text-gray-600" />
                   <span className="text-xs font-medium text-gray-700">{getStageLabel(startup.financialStage, "financial")}</span>
                 </div>
+              )}
+            </div>
+          )}
+          {/* Update count and green dot - positioned on the right */}
+          {updateCount > 0 && (
+            <div className="flex items-center gap-2 ml-auto">
+              <UpdateTooltip
+                updateCount={updateCount}
+                latestUpdate={startup.updates?.[0] || null}
+              >
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-700 cursor-help">
+                  <svg className="h-3.5 w-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  {updateCount} {updateCount === 1 ? "update" : "updates"}
+                </span>
+              </UpdateTooltip>
+              {hasRecentUpdate && (
+                <div className="h-3 w-3 bg-green-500 rounded-full border-2 border-white shadow-sm flex-shrink-0" title="Updated in the last 24 hours" />
               )}
             </div>
           )}

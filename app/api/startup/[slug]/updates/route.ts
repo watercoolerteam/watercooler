@@ -80,20 +80,31 @@ export async function POST(
     // Sanitize content
     const sanitizedContent = sanitizeString(validatedData.content);
 
-    // Create update
-    const update = await prisma.startupUpdate.create({
-      data: {
-        startupId: startup.id,
-        content: sanitizedContent,
-        updateNumber: nextUpdateNumber,
-      },
-      select: {
-        id: true,
-        content: true,
-        updateNumber: true,
-        createdAt: true,
-      },
-    });
+    // Create update and update startup's denormalized fields
+    const now = new Date();
+    const [update] = await Promise.all([
+      prisma.startupUpdate.create({
+        data: {
+          startupId: startup.id,
+          content: sanitizedContent,
+          updateNumber: nextUpdateNumber,
+        },
+        select: {
+          id: true,
+          content: true,
+          updateNumber: true,
+          createdAt: true,
+        },
+      }),
+      // Update denormalized fields on startup
+      prisma.startup.update({
+        where: { id: startup.id },
+        data: {
+          updateCount: { increment: 1 },
+          lastUpdateAt: now,
+        },
+      }),
+    ]);
 
     return createSuccessResponse({
       update,
