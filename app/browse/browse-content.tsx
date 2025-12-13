@@ -294,17 +294,36 @@ function StartupCard({ startup }: { startup: Startup & { updates?: Array<{ conte
         </div>
       )}
 
-      {/* Founder Highlight */}
-      {startup.founderHighlight && (
+      {/* Founder Highlights */}
+      {((startup as any).founders && (startup as any).founders.length > 0) || startup.founderHighlight ? (
         <div className="mb-4 flex items-start gap-2 pl-3 border-l-2 border-gray-300">
-          <svg className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
+          {/* Show founder icons */}
+          <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+            {(startup as any).founders && (startup as any).founders.length > 0 ? (
+              (startup as any).founders.map((_: any, idx: number) => (
+                <svg key={idx} className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              ))
+            ) : (
+              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            )}
+          </div>
+          {/* Show founder highlights - combine multiple on one line */}
           <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
-            {startup.founderHighlight}
+            {(startup as any).founders && (startup as any).founders.length > 0 ? (
+              (startup as any).founders
+                .filter((f: any) => f.highlight)
+                .map((f: any) => f.highlight)
+                .join(", ")
+            ) : (
+              startup.founderHighlight
+            )}
           </p>
         </div>
-      )}
+      ) : null}
 
         <div className="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-100">
           {startup.createdAt && (
@@ -437,19 +456,38 @@ function StartupListItem({ startup }: { startup: Startup & { updates?: Array<{ c
           )}
         </div>
 
-        {/* Founder Highlight */}
-        {startup.founderHighlight && (
+        {/* Founder Highlights */}
+        {((startup as any).founders && (startup as any).founders.length > 0) || startup.founderHighlight ? (
           <div className="mt-3 pt-3 border-t border-gray-200">
             <div className="flex items-start gap-2 pl-3 border-l-2 border-gray-300">
-              <svg className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+              {/* Show founder icons */}
+              <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+                {(startup as any).founders && (startup as any).founders.length > 0 ? (
+                  (startup as any).founders.map((_: any, idx: number) => (
+                    <svg key={idx} className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  ))
+                ) : (
+                  <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                )}
+              </div>
+              {/* Show founder highlights - combine multiple on one line */}
               <p className="text-xs text-gray-600 leading-relaxed line-clamp-1">
-                {startup.founderHighlight}
+                {(startup as any).founders && (startup as any).founders.length > 0 ? (
+                  (startup as any).founders
+                    .filter((f: any) => f.highlight)
+                    .map((f: any) => f.highlight)
+                    .join(", ")
+                ) : (
+                  startup.founderHighlight
+                )}
               </p>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </Link>
   );

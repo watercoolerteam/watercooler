@@ -39,7 +39,7 @@ const submitSchema = z.object({
     .transform((val) => (val === "" ? null : val)), // Convert empty strings to null
   founderXLink: z.union([z.string().url(), z.literal("")]).optional().transform((val) => (val === "" ? null : val)),
   founderLinkedInLink: z.union([z.string().url(), z.literal("")]).optional().transform((val) => (val === "" ? null : val)),
-  founderHighlight: z.string().optional().or(z.literal("")).transform((val) => (val === "" ? null : val)),
+  founderHighlight: z.union([z.string(), z.literal(""), z.null(), z.undefined()]).optional().transform((val) => (val === "" || val === undefined || val === null ? null : val)),
   companyStage: z.enum(["IDEA", "BUILDING", "PRIVATE_BETA", "LIVE"]).nullable().optional(),
   financialStage: z.enum(["BOOTSTRAPPED", "NOT_RAISING", "RAISING_SOON", "RAISING", "FUNDED"]).nullable().optional(),
 });
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       location: body.location ? sanitizeString(body.location) : body.location,
       founderNames: body.founderNames ? sanitizeString(body.founderNames) : body.founderNames,
       founderEmail: body.founderEmail ? sanitizeEmail(body.founderEmail) : body.founderEmail,
-      founderHighlight: body.founderHighlight ? sanitizeString(body.founderHighlight) : body.founderHighlight,
+      founderHighlight: body.founderHighlight ? sanitizeString(body.founderHighlight) : (body.founderHighlight === undefined ? undefined : null),
       founderXLink: body.founderXLink ? sanitizeUrl(body.founderXLink) : body.founderXLink,
       founderLinkedInLink: body.founderLinkedInLink ? sanitizeUrl(body.founderLinkedInLink) : body.founderLinkedInLink,
       logo: body.logo,

@@ -147,6 +147,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     }
 
     // Get paginated startups - run queries separately for better error handling
+    // Include founders for display
     const skip = (page - 1) * ITEMS_PER_PAGE;
     
     let startups: any[] = [];
@@ -167,6 +168,13 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             },
             orderBy: { createdAt: "desc" },
             take: 1, // Only get the most recent update
+          },
+          founders: {
+            orderBy: { order: "asc" },
+            select: {
+              name: true,
+              highlight: true,
+            },
           },
         },
       });
