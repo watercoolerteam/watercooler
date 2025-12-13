@@ -65,8 +65,14 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     }
 
     // Add category filter if provided
+    // Match startups where the category field contains the selected category (handles comma-separated categories)
     if (category && category.trim()) {
-      whereConditions.push({ category: category.trim() });
+      whereConditions.push({
+        category: {
+          contains: category.trim(),
+          mode: "insensitive",
+        },
+      });
     }
 
     // Add location filter if provided
@@ -198,9 +204,25 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     }
 
     // Safely extract filter options with fallbacks
-    const categories = Array.from(
-      new Set(allStartups.map((s) => s.category).filter(Boolean))
-    ).sort();
+    // Split comma-separated categories and extract unique individual categories
+    const allCategoryStrings = allStartups
+      .map((s) => s.category)
+      .filter(Boolean) as string[];
+    
+    const individualCategories = new Set<string>();
+    allCategoryStrings.forEach((catString) => {
+      if (catString) {
+        // Split by comma and trim each category
+        catString.split(',').forEach((cat) => {
+          const trimmed = cat.trim();
+          if (trimmed) {
+            individualCategories.add(trimmed);
+          }
+        });
+      }
+    });
+    
+    const categories = Array.from(individualCategories).sort();
     const locations = Array.from(
       new Set(allStartups.map((s) => s.location).filter(Boolean))
     ).sort();

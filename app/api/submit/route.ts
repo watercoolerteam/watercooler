@@ -9,6 +9,14 @@ import { Prisma } from "@prisma/client";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import { sanitizeString, sanitizeUrl, sanitizeEmail } from "@/lib/sanitize";
 
+const founderSchema = z.object({
+  name: z.string().min(1, "Founder name is required"),
+  email: z.string().email("Valid email is required").nullable().optional(),
+  highlight: z.string().nullable().optional(),
+  xLink: z.union([z.string().url(), z.literal("")]).nullable().optional().transform((val) => (val === "" ? null : val)),
+  linkedInLink: z.union([z.string().url(), z.literal("")]).nullable().optional().transform((val) => (val === "" ? null : val)),
+});
+
 const submitSchema = z.object({
   name: z.string().min(1, "Company name is required"),
   oneLiner: z.string().max(120, "One liner must be 120 characters or less").optional(),
@@ -16,8 +24,9 @@ const submitSchema = z.object({
   website: z.string().url("Valid website URL is required"),
   category: z.string().min(1, "Category is required"),
   location: z.string().min(1, "Location is required"),
-  founderNames: z.string().min(1, "Founder name(s) is required"),
-  founderEmail: z.string().email("Valid email is required"),
+  founderNames: z.string().min(1, "Founder name(s) is required"), // For backwards compatibility
+  founderEmail: z.string().email("Valid email is required"), // For backwards compatibility
+  founders: z.array(founderSchema).optional(), // New multiple founders support
   // Logo can be: full URL, relative path starting with /uploads/logos/, empty string, or null
   logo: z
     .union([
@@ -226,6 +235,20 @@ export async function POST(request: NextRequest) {
         financialStage: validatedData.financialStage ?? null,
       };
       
+      // Add founders if provided
+      if (validatedData.founders && validatedData.founders.length > 0) {
+        prismaData.founders = {
+          create: validatedData.founders.map((founder, index) => ({
+            name: sanitizeString(founder.name),
+            email: founder.email ? sanitizeEmail(founder.email) : null,
+            highlight: founder.highlight ? sanitizeString(founder.highlight) : null,
+            xLink: founder.xLink ? sanitizeUrl(founder.xLink) : null,
+            linkedInLink: founder.linkedInLink ? sanitizeUrl(founder.linkedInLink) : null,
+            order: index,
+          })),
+        };
+      }
+      
       console.log("=== PRISMA CREATE DATA ===");
       console.log(JSON.stringify(prismaData, null, 2));
       console.log("Data types:", {
@@ -257,9 +280,13 @@ export async function POST(request: NextRequest) {
       
       const startup = await prisma.startup.create({
         data: cleanData,
+        include: {
+          founders: true,
+        },
       });
       
       console.log("✅ Startup created successfully:", startup.id);
+      console.log(`✅ Created ${startup.founders.length} founder(s)`);
 
       // Send confirmation email
       console.log(`Sending submission confirmation email to ${startup.founderEmail}`);

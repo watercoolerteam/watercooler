@@ -66,6 +66,11 @@ export default async function StartupPage({ params }: PageProps) {
     // Try to find the startup
     const startup = await prisma.startup.findUnique({
       where: { slug: normalizedSlug },
+      include: {
+        founders: {
+          orderBy: { order: "asc" },
+        },
+      },
     });
 
     if (!startup) {
@@ -241,7 +246,15 @@ export default async function StartupPage({ params }: PageProps) {
                 {startup.category && (
                   <div>
                     <dt className="text-sm font-medium text-gray-500 mb-1">Category</dt>
-                    <dd className="text-sm text-gray-900">{startup.category}</dd>
+                    <dd className="text-sm text-gray-900">
+                      <div className="flex flex-wrap gap-2">
+                        {startup.category.split(',').map((cat, idx) => (
+                          <span key={idx} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                            {cat.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    </dd>
                   </div>
                 )}
                 {startup.location && (
@@ -343,56 +356,114 @@ export default async function StartupPage({ params }: PageProps) {
 
           {/* Sidebar - Founders Only */}
           <div>
-            {startup.founderNames && (
+            {(startup.founders && startup.founders.length > 0) || startup.founderNames ? (
               <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 shadow-sm rounded-lg p-6 sticky top-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Founder{startup.founderNames.includes(',') || startup.founderNames.includes('&') ? 's' : ''}</h3>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-base font-medium text-gray-900 mb-1">
-                      {startup.founderNames}
-                    </p>
-                    {startup.founderHighlight && (
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        {startup.founderHighlight}
-                      </p>
-                    )}
-                  </div>
-                  
-                  {(startup.founderXLink || startup.founderLinkedInLink) && (
-                    <div className="pt-3 border-t border-gray-200">
-                      <div className="flex flex-col gap-3">
-                        {startup.founderXLink && (
-                          <a
-                            href={startup.founderXLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors text-sm font-medium"
-                          >
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                            </svg>
-                            X
-                          </a>
-                        )}
-                        {startup.founderLinkedInLink && (
-                          <a
-                            href={startup.founderLinkedInLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#0077b5] text-white hover:bg-[#006399] transition-colors text-sm font-medium"
-                          >
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                            </svg>
-                            LinkedIn
-                          </a>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  {startup.founders && startup.founders.length > 0 
+                    ? startup.founders.length === 1 ? 'Founder' : 'Founders'
+                    : startup.founderNames?.includes(',') || startup.founderNames?.includes('&') ? 'Founders' : 'Founder'}
+                </h3>
+                <div className="space-y-6">
+                  {/* Display founders from Founder model if available */}
+                  {startup.founders && startup.founders.length > 0 ? (
+                    startup.founders.map((founder, index) => (
+                      <div key={founder.id} className={index > 0 ? "pt-6 border-t border-gray-200" : ""}>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-base font-medium text-gray-900 mb-1">
+                              {founder.name}
+                            </p>
+                            {founder.highlight && (
+                              <p className="text-sm text-gray-600 leading-relaxed">
+                                {founder.highlight}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {(founder.xLink || founder.linkedInLink) && (
+                            <div className="flex flex-col gap-3">
+                              {founder.xLink && (
+                                <a
+                                  href={founder.xLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors text-sm font-medium"
+                                >
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                  </svg>
+                                  X
+                                </a>
+                              )}
+                              {founder.linkedInLink && (
+                                <a
+                                  href={founder.linkedInLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#0077b5] text-white hover:bg-[#006399] transition-colors text-sm font-medium"
+                                >
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                  </svg>
+                                  LinkedIn
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    /* Fallback to old founder fields for backwards compatibility */
+                    <div>
+                      <div>
+                        <p className="text-base font-medium text-gray-900 mb-1">
+                          {startup.founderNames}
+                        </p>
+                        {startup.founderHighlight && (
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {startup.founderHighlight}
+                          </p>
                         )}
                       </div>
+                      
+                      {(startup.founderXLink || startup.founderLinkedInLink) && (
+                        <div className="pt-3">
+                          <div className="flex flex-col gap-3">
+                            {startup.founderXLink && (
+                              <a
+                                href={startup.founderXLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors text-sm font-medium"
+                              >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                                X
+                              </a>
+                            )}
+                            {startup.founderLinkedInLink && (
+                              <a
+                                href={startup.founderLinkedInLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#0077b5] text-white hover:bg-[#006399] transition-colors text-sm font-medium"
+                              >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                                LinkedIn
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
-            )}
+            ) : null}
 
           </div>
         </div>

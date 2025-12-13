@@ -16,6 +16,18 @@ export default function SubmitPage() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Founder management state
+  interface FounderData {
+    name: string;
+    email: string;
+    highlight: string;
+    xLink: string;
+    linkedInLink: string;
+  }
+  const [founders, setFounders] = useState<FounderData[]>([
+    { name: "", email: "", highlight: "", xLink: "", linkedInLink: "" }
+  ]);
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,6 +102,22 @@ export default function SubmitPage() {
     }
   };
 
+  const addFounder = () => {
+    setFounders([...founders, { name: "", email: "", highlight: "", xLink: "", linkedInLink: "" }]);
+  };
+
+  const removeFounder = (index: number) => {
+    if (founders.length > 1) {
+      setFounders(founders.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateFounder = (index: number, field: keyof FounderData, value: string) => {
+    const updated = [...founders];
+    updated[index] = { ...updated[index], [field]: value };
+    setFounders(updated);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -102,11 +130,32 @@ export default function SubmitPage() {
       return;
     }
 
+    // Validate founders
+    const validFounders = founders.filter(f => f.name.trim() !== "");
+    if (validFounders.length === 0) {
+      setError("Please add at least one founder.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Check that at least one founder has an email
+    const foundersWithEmail = validFounders.filter(f => f.email.trim() !== "");
+    if (foundersWithEmail.length === 0) {
+      setError("At least one founder must have an email address.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     
     // Get stage values - handle both empty strings and undefined
     const companyStageValue = formData.get("companyStage");
     const financialStageValue = formData.get("financialStage");
+    
+    // For backwards compatibility, use the first founder's email as the primary email
+    // and combine all founder names
+    const founderNames = validFounders.map(f => f.name.trim()).join(", ");
+    const primaryEmail = foundersWithEmail[0].email.trim();
     
     const data = {
       name: formData.get("name") as string,
@@ -115,12 +164,16 @@ export default function SubmitPage() {
       website: formData.get("website") as string,
       category: formData.get("category") as string,
       location: formData.get("location") as string,
-      founderNames: formData.get("founderNames") as string,
-      founderEmail: formData.get("founderEmail") as string,
-      founderHighlight: (formData.get("founderHighlight") as string) || null,
+      founderNames: founderNames, // For backwards compatibility
+      founderEmail: primaryEmail, // For backwards compatibility
+      founders: validFounders.map(f => ({
+        name: f.name.trim(),
+        email: f.email.trim() || null,
+        highlight: f.highlight.trim() || null,
+        xLink: f.xLink.trim() || null,
+        linkedInLink: f.linkedInLink.trim() || null,
+      })),
       logo: logoUrl || (formData.get("logo") as string) || null,
-      founderXLink: formData.get("founderXLink") as string,
-      founderLinkedInLink: formData.get("founderLinkedInLink") as string,
       companyStage: companyStageValue && companyStageValue !== "" ? (companyStageValue as string) : null,
       financialStage: financialStageValue && financialStageValue !== "" ? (financialStageValue as string) : null,
     };
@@ -353,7 +406,7 @@ export default function SubmitPage() {
                     placeholder="e.g., SaaS, AI, Fintech, Healthcare"
                   />
                   <p className="mt-1 text-sm text-gray-700">
-                    The primary category for your startup
+                    Separate multiple categories with commas (e.g., "AI, Fintech, B2B")
                   </p>
                 </div>
 
@@ -472,82 +525,119 @@ export default function SubmitPage() {
 
             {/* Founder Info Section */}
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                Founder Information
-              </h2>
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Founder Information
+                </h2>
+                <button
+                  type="button"
+                  onClick={addFounder}
+                  className="text-sm font-medium text-gray-900 hover:text-gray-700 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Founder
+                </button>
+              </div>
               <div className="space-y-6">
-                <div>
-                  <label htmlFor="founderNames" className="block text-sm font-medium text-gray-700 mb-2">
-                    Founder Name(s) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="founderNames"
-                    name="founderNames"
-                    required
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                    placeholder="John Doe, Jane Smith"
-                  />
-                </div>
+                {founders.map((founder, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-semibold text-gray-900">
+                        Founder {index + 1}
+                      </h3>
+                      {founders.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeFounder(index)}
+                          className="text-sm text-red-600 hover:text-red-800 inline-flex items-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={founder.name}
+                          onChange={(e) => updateFounder(index, "name", e.target.value)}
+                          required={index === 0}
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                          placeholder="John Doe"
+                        />
+                      </div>
 
-                <div>
-                  <label htmlFor="founderEmail" className="block text-sm font-medium text-gray-700 mb-2">
-                    Founder Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="founderEmail"
-                    name="founderEmail"
-                    required
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                    placeholder="founder@yourstartup.com"
-                  />
-                  <p className="mt-1 text-sm text-gray-700">
-                    We'll use this to notify you when your startup is approved and to link it to your account if you claim it later.
-                  </p>
-                </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email {index === 0 && <span className="text-red-500">*</span>}
+                        </label>
+                        <input
+                          type="email"
+                          value={founder.email}
+                          onChange={(e) => updateFounder(index, "email", e.target.value)}
+                          required={index === 0}
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                          placeholder="founder@yourstartup.com"
+                        />
+                        {index === 0 && (
+                          <p className="mt-1 text-sm text-gray-700">
+                            We'll use this to notify you when your startup is approved and to link it to your account if you claim it later.
+                          </p>
+                        )}
+                      </div>
 
-                <div>
-                  <label htmlFor="founderHighlight" className="block text-sm font-medium text-gray-700 mb-2">
-                    Founder Highlight
-                  </label>
-                  <input
-                    type="text"
-                    id="founderHighlight"
-                    name="founderHighlight"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                    placeholder="ex-Google, YC Alum, 2nd-time Founder, etc."
-                  />
-                  <p className="mt-1 text-sm text-gray-700">
-                    Highlight notable background, achievements, or credentials (e.g., "ex-Google", "YC Alum", "2nd-time Founder")
-                  </p>
-                </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Highlight
+                        </label>
+                        <input
+                          type="text"
+                          value={founder.highlight}
+                          onChange={(e) => updateFounder(index, "highlight", e.target.value)}
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                          placeholder="ex-Google, YC Alum, 2nd-time Founder, etc."
+                        />
+                        <p className="mt-1 text-sm text-gray-700">
+                          Highlight notable background, achievements, or credentials
+                        </p>
+                      </div>
 
-                <div>
-                  <label htmlFor="founderXLink" className="block text-sm font-medium text-gray-700 mb-2">
-                    Founder X (Twitter) Link
-                  </label>
-                  <input
-                    type="url"
-                    id="founderXLink"
-                    name="founderXLink"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                    placeholder="https://x.com/foundername"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          X (Twitter) Link
+                        </label>
+                        <input
+                          type="url"
+                          value={founder.xLink}
+                          onChange={(e) => updateFounder(index, "xLink", e.target.value)}
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                          placeholder="https://x.com/foundername"
+                        />
+                      </div>
 
-                <div>
-                  <label htmlFor="founderLinkedInLink" className="block text-sm font-medium text-gray-700 mb-2">
-                    Founder LinkedIn Link
-                  </label>
-                  <input
-                    type="url"
-                    id="founderLinkedInLink"
-                    name="founderLinkedInLink"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                    placeholder="https://linkedin.com/in/foundername"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          LinkedIn Link
+                        </label>
+                        <input
+                          type="url"
+                          value={founder.linkedInLink}
+                          onChange={(e) => updateFounder(index, "linkedInLink", e.target.value)}
+                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                          placeholder="https://linkedin.com/in/foundername"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

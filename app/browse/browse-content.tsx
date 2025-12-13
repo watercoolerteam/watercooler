@@ -244,9 +244,13 @@ function StartupCard({ startup }: { startup: Startup & { updates?: Array<{ conte
 
       <div className="mb-4 flex items-center gap-3 flex-wrap">
         {startup.category && (
-          <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
-            {startup.category}
-          </span>
+          <>
+            {startup.category.split(',').map((cat, idx) => (
+              <span key={idx} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                {cat.trim()}
+              </span>
+            ))}
+          </>
         )}
         {updateCount > 0 && (
           <UpdateTooltip
@@ -375,9 +379,13 @@ function StartupListItem({ startup }: { startup: Startup & { updates?: Array<{ c
 
         <div className="flex items-center gap-4 flex-wrap">
           {startup.category && (
-            <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
-              {startup.category}
-            </span>
+            <>
+              {startup.category.split(',').map((cat, idx) => (
+                <span key={idx} className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                  {cat.trim()}
+                </span>
+              ))}
+            </>
           )}
           {startup.location && (
             <div className="flex items-center gap-1.5 text-xs text-gray-500">

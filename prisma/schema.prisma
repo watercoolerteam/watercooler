@@ -38,6 +38,7 @@ model Startup {
   user              User?    @relation(fields: [claimedBy], references: [id])
   claimTokens       ClaimTokenStartup[]
   updates           StartupUpdate[]
+  founders          Founder[]
   
   @@index([status])
   @@index([slug])
@@ -162,4 +163,22 @@ model StartupUpdate {
   @@index([startupId])
   @@index([createdAt])
   @@index([startupId, updateNumber])
+}
+
+model Founder {
+  id                String   @id @default(cuid())
+  startupId         String
+  name              String
+  email             String?
+  highlight         String?
+  xLink             String?
+  linkedInLink      String?
+  order             Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  startup           Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  
+  @@index([startupId])
+  @@index([startupId, order])
 }
